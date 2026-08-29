@@ -10,7 +10,7 @@ match suggestions, chat with them, and see campus events.
 | **A** | Data layer + AI matching engine | `prisma/`, `src/lib/matching/`, `src/lib/db.ts`, `src/app/api/students`, `src/app/api/matches`, `src/app/matches` |
 | **B** | Timetable: manual input, ICS parsing, classmates list | `src/lib/ics/`, `src/app/schedule/`, `src/components/schedule/`, `src/app/api/schedule` |
 | **C** | Chat + Events | `src/lib/polling/`, `src/app/chat/`, `src/app/events/`, `src/components/chat/`, `src/components/events/`, `src/app/api/messages`, `src/app/api/events` |
-| **D** | Design system, profile/login pages, accessibility, video & submission | `src/components/ui/`, `src/app/profile/`, `src/app/login/`, `src/app/globals.css`, `docs/` |
+| **D** | Design system, login/onboarding/profile pages, accessibility, video & submission | `src/components/ui/`, `src/app/profile/`, `src/app/login/`, `src/app/onboarding/`, `src/app/globals.css`, `docs/` |
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full folder map, data contracts
 between owners, and the build order.
@@ -35,7 +35,7 @@ between owners, and the build order.
 ```bash
 npm install
 cp .env.example .env
-npx prisma migrate dev --name init
+npx prisma db push
 npx prisma db seed
 npm run dev
 ```
