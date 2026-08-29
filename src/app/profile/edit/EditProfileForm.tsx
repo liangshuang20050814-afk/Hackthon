@@ -14,6 +14,7 @@ import {
   MBTI_TYPES,
   MIN_INTERESTS,
   YEARS,
+  clearCurrentStudentIdCookie,
   fileToSquareDataUrl,
   generateInitialsAvatar,
   initialsOf,
@@ -86,6 +87,11 @@ export function EditProfileForm({ student }: { student: EditableStudent }) {
   }
 
   const formValid = name.trim().length > 0 && faculty !== "" && yearOfStudy !== null && interests.length >= MIN_INTERESTS;
+
+  function handleLogout() {
+    clearCurrentStudentIdCookie();
+    router.push("/login");
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -295,13 +301,23 @@ export function EditProfileForm({ student }: { student: EditableStudent }) {
 
       {error && <p className="text-sm text-rose-600">{error}</p>}
 
-      <div className="flex justify-end gap-3">
-        <Button type="button" variant="secondary" onClick={() => router.push(`/profile/${student.id}`)} className="sm:w-40">
-          Cancel
-        </Button>
-        <Button type="submit" disabled={!formValid || submitting} className="sm:w-40">
-          {submitting ? "Saving..." : "Save changes"}
-        </Button>
+      <div className="flex items-center justify-between gap-3 border-t border-brand-100 pt-6">
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="text-sm font-semibold text-rose-600 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+        >
+          Log out
+        </button>
+
+        <div className="flex gap-3">
+          <Button type="button" variant="secondary" onClick={() => router.push(`/profile/${student.id}`)} className="sm:w-40">
+            Cancel
+          </Button>
+          <Button type="submit" disabled={!formValid || submitting} className="sm:w-40">
+            {submitting ? "Saving..." : "Save changes"}
+          </Button>
+        </div>
       </div>
     </form>
   );
