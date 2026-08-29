@@ -12,170 +12,24 @@
 import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { Chip } from "@/components/ui/Chip";
+import { BirthdayInput } from "@/components/ui/BirthdayInput";
+import {
+  AVATAR_SWATCHES,
+  BIO_MAX,
+  FACULTIES,
+  GENDERS,
+  INTERESTS,
+  MBTI_TYPES,
+  MIN_INTERESTS,
+  YEARS,
+  fileToSquareDataUrl,
+  generateInitialsAvatar,
+  initialsOf,
+  setCurrentStudentIdCookie,
+} from "@/lib/profileForm";
 
-const FACULTIES = [
-  "Architecture, Design & Planning",
-  "Arts & Social Sciences",
-  "Business",
-  "Conservatorium of Music",
-  "Education & Social Work",
-  "Engineering",
-  "Law",
-  "Medicine & Health",
-  "Science",
-];
-
-const YEARS = [
-  { label: "1st year", value: 1 },
-  { label: "2nd year", value: 2 },
-  { label: "3rd year", value: 3 },
-  { label: "4th year", value: 4 },
-  { label: "5th+ year", value: 5 },
-  { label: "Postgrad", value: 6 },
-];
-
-const GENDERS = ["Woman", "Man", "Non-binary", "Prefer not to say"];
-
-const MBTI_TYPES = [
-  "INTJ",
-  "INTP",
-  "ENTJ",
-  "ENTP",
-  "INFJ",
-  "INFP",
-  "ENFJ",
-  "ENFP",
-  "ISTJ",
-  "ISFJ",
-  "ESTJ",
-  "ESFJ",
-  "ISTP",
-  "ISFP",
-  "ESTP",
-  "ESFP",
-];
-
-const AVATAR_SWATCHES = [
-  { id: "indigo", from: "from-brand-400", to: "to-brand-600", hexFrom: "#8B7BF0", hexTo: "#5B4FE0" },
-  { id: "rose", from: "from-rose-400", to: "to-rose-600", hexFrom: "#FB7185", hexTo: "#E11D48" },
-  { id: "amber", from: "from-amber-400", to: "to-amber-600", hexFrom: "#FBBF24", hexTo: "#D97706" },
-  { id: "emerald", from: "from-emerald-400", to: "to-emerald-600", hexFrom: "#34D399", hexTo: "#059669" },
-  { id: "sky", from: "from-sky-400", to: "to-sky-600", hexFrom: "#38BDF8", hexTo: "#0284C7" },
-  { id: "fuchsia", from: "from-fuchsia-400", to: "to-fuchsia-600", hexFrom: "#E879F9", hexTo: "#C026D3" },
-];
-
-const INTERESTS = [
-  "Coffee",
-  "Gaming",
-  "Hiking",
-  "Travel",
-  "Music",
-  "Movies",
-  "K-pop",
-  "Art",
-  "Books",
-  "Photography",
-  "Basketball",
-  "Football",
-  "Yoga",
-  "Cooking",
-  "Anime",
-  "Board Games",
-  "Startups",
-  "Coding",
-  "Volunteering",
-  "Climbing",
-  "Dance",
-  "Fashion",
-];
-
-const MIN_INTERESTS = 3;
-const BIO_MAX = 200;
 const TOTAL_STEPS = 4;
-const AVATAR_SIZE = 320;
-
-function initialsOf(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
-}
-
-// Center-crops the uploaded photo to a square and downsizes it, so what we
-// store (and later send to the API) is a small, consistent data: URL
-// instead of an arbitrarily large original file.
-function fileToSquareDataUrl(file: File, size = AVATAR_SIZE): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const objectUrl = URL.createObjectURL(file);
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        reject(new Error("Canvas not supported"));
-        return;
-      }
-      const side = Math.min(img.width, img.height);
-      const sx = (img.width - side) / 2;
-      const sy = (img.height - side) / 2;
-      ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
-      URL.revokeObjectURL(objectUrl);
-      resolve(canvas.toDataURL("image/jpeg", 0.85));
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      reject(new Error("Could not read image"));
-    };
-    img.src = objectUrl;
-  });
-}
-
-// Fallback when no photo is uploaded: renders the same gradient + initials
-// shown in the preview as a real image, so avatarUrl is never a dead value.
-function generateInitialsAvatar(name: string, hexFrom: string, hexTo: string, size = AVATAR_SIZE): string {
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return "";
-  const gradient = ctx.createLinearGradient(0, 0, size, size);
-  gradient.addColorStop(0, hexFrom);
-  gradient.addColorStop(1, hexTo);
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, size, size);
-  ctx.fillStyle = "#FFFFFF";
-  ctx.font = `700 ${size * 0.4}px system-ui, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(initialsOf(name), size / 2, size / 2 + size * 0.03);
-  return canvas.toDataURL("image/png");
-}
-
-function Chip({
-  label,
-  selected,
-  onClick,
-}: {
-  label: string;
-  selected: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={selected}
-      className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${
-        selected
-          ? "border-transparent bg-gradient-to-r from-brand-500 to-brand-700 text-white shadow-soft"
-          : "border-brand-100 bg-white text-ink-muted hover:border-brand-300 hover:text-brand-700"
-      }`}
-    >
-      {label}
-    </button>
-  );
-}
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -256,6 +110,8 @@ export default function OnboardingPage() {
         }),
       });
       if (!res.ok) throw new Error("Failed to save profile");
+      const created = await res.json();
+      setCurrentStudentIdCookie(created.id);
       router.push("/matches");
     } catch {
       setError("Something went wrong saving your profile — please try again.");
@@ -429,16 +285,8 @@ export default function OnboardingPage() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="birthday" className="text-sm font-medium text-ink">
-                Birthday
-              </label>
-              <input
-                id="birthday"
-                type="date"
-                value={birthday}
-                onChange={(e) => setBirthday(e.target.value)}
-                className="rounded-xl border border-brand-100 bg-white px-3.5 py-2.5 text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
-              />
+              <span className="text-sm font-medium text-ink">Birthday</span>
+              <BirthdayInput value={birthday} onChange={setBirthday} />
             </div>
 
             <div className="flex flex-col gap-1.5">
