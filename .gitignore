@@ -20,3 +20,21 @@
 .DS_Store
 *.pem
 npm-debug.log*
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+*.code-workspace
+
+# Local history plugin
+.history/
+
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# CMake local profiles
+/cmake-build-*/
