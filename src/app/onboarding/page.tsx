@@ -25,8 +25,8 @@ import {
   YEARS,
   fileToSquareDataUrl,
   generateInitialsAvatar,
+  getCurrentStudentIdClient,
   initialsOf,
-  setCurrentStudentIdCookie,
 } from "@/lib/profileForm";
 
 const TOTAL_STEPS = 4;
@@ -93,8 +93,12 @@ export default function OnboardingPage() {
     setError(null);
     try {
       const avatarUrl = photoDataUrl || generateInitialsAvatar(name, swatch.hexFrom, swatch.hexTo);
-      const res = await fetch("/api/students", {
-        method: "POST",
+      // The account itself was already created at sign-up (POST
+      // /api/auth/signup), which is who the unimatch_student_id cookie
+      // points to — this step just fills in the rest of that same row.
+      const studentId = getCurrentStudentIdClient();
+      const res = await fetch(`/api/students/${studentId}`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name,
@@ -110,8 +114,6 @@ export default function OnboardingPage() {
         }),
       });
       if (!res.ok) throw new Error("Failed to save profile");
-      const created = await res.json();
-      setCurrentStudentIdCookie(created.id);
       router.push("/matches");
     } catch {
       setError("Something went wrong saving your profile — please try again.");

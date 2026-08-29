@@ -115,6 +115,14 @@ export function getCurrentStudentIdClient(): string {
   return match ? decodeURIComponent(match[1]) : CURRENT_STUDENT_ID;
 }
 
+// "Log out": just drops the cookie. There's no server session to invalidate
+// (see the caveat above), so after this the app falls back to
+// CURRENT_STUDENT_ID like a fresh browser until someone signs up again.
+export function clearCurrentStudentIdCookie() {
+  if (typeof document === "undefined") return;
+  document.cookie = `${CURRENT_STUDENT_COOKIE}=; path=/; max-age=0`;
+}
+
 export function initialsOf(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "?";

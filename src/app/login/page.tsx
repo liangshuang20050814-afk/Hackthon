@@ -1,14 +1,15 @@
 "use client";
 
 // [Owner: D] Entry point of the app — email/password login + sign up, in
-// one screen with a tab switch. No real auth backend exists yet (the
-// Student model has no email/password columns), so submitting either form
-// just continues into the app; wiring real auth is a backend task for A,
-// not a D/design concern.
+// one screen with a tab switch. Real credentials now: POST /api/auth/login
+// and /api/auth/signup, bcrypt-hashed passwords, wrong password actually
+// rejected. Only accounts created through Sign up can log in — seed
+// students have no password set on purpose (they represent other people).
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Logo } from "@/components/ui/Logo";
+import { setCurrentStudentIdCookie } from "@/lib/profileForm";
 
 type Mode = "login" | "signup";
 
@@ -45,25 +46,79 @@ function Field({
 
 export default function LoginPage() {
   const [mode, setMode] = useState<Mode>("login");
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
 
-  // TODO [A]: replace with a real request once Student has email/password
-  // columns. For the demo: existing users go straight into the app, new
-  // users go through profile setup (src/app/onboarding/page.tsx) first.
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  function switchMode(next: Mode) {
+    setMode(next);
+    setError(null);
+  }
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setError(null);
+
+    const data = new FormData(e.currentTarget);
+    const email = String(data.get("email") ?? "");
+    const password = String(data.get("password") ?? "");
+
     if (mode === "signup") {
-      const name = new FormData(e.currentTarget).get("name");
-      const query = name ? `?name=${encodeURIComponent(name.toString())}` : "";
-      router.push(`/onboarding${query}`);
+      const name = String(data.get("name") ?? "");
+      const confirmPassword = String(data.get("confirmPassword") ?? "");
+      if (password !== confirmPassword) {
+        setError("Passwords don't match.");
+        return;
+      }
+
+      setSubmitting(true);
+      try {
+        const res = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password }),
+        });
+        const result = await res.json();
+        if (!res.ok) {
+          setError(result.error ?? "Could not create account.");
+          return;
+        }
+        setCurrentStudentIdCookie(result.id);
+        router.push(`/onboarding?name=${encodeURIComponent(name)}`);
+      } catch {
+        setError("Something went wrong — please try again.");
+      } finally {
+        setSubmitting(false);
+      }
     } else {
-      router.push("/matches");
+      setSubmitting(true);
+      try {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        const result = await res.json();
+        if (!res.ok) {
+          setError(result.error ?? "Could not log in.");
+          return;
+        }
+        setCurrentStudentIdCookie(result.id);
+        router.push("/matches");
+      } catch {
+        setError("Something went wrong — please try again.");
+      } finally {
+        setSubmitting(false);
+      }
     }
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
-      <div className="glass-surface flex flex-col gap-6 rounded-[2rem] px-8 py-10">
+    <main
+      className="flex min-h-screen items-center justify-center bg-cover bg-center px-6 py-12"
+      style={{ backgroundImage: "url(/background.png)" }}
+    >
+      <div className="glass-surface flex w-full max-w-md flex-col gap-6 rounded-[2rem] px-8 py-10">
         <div className="flex flex-col items-center gap-2 text-center">
           <Logo />
           <h1 className="font-display text-xl font-bold text-ink">UniMatch</h1>
@@ -79,7 +134,7 @@ export default function LoginPage() {
             type="button"
             role="tab"
             aria-selected={mode === "login"}
-            onClick={() => setMode("login")}
+            onClick={() => switchMode("login")}
             className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${
               mode === "login" ? "bg-white text-brand-700 shadow-soft" : "text-ink-muted"
             }`}
@@ -90,7 +145,7 @@ export default function LoginPage() {
             type="button"
             role="tab"
             aria-selected={mode === "signup"}
-            onClick={() => setMode("signup")}
+            onClick={() => switchMode("signup")}
             className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${
               mode === "signup" ? "bg-white text-brand-700 shadow-soft" : "text-ink-muted"
             }`}
@@ -142,8 +197,10 @@ export default function LoginPage() {
             />
           )}
 
-          <Button type="submit" className="mt-2">
-            {mode === "login" ? "Log in" : "Create account"}
+          {error && <p className="text-sm text-rose-600">{error}</p>}
+
+          <Button type="submit" disabled={submitting} className="mt-2">
+            {submitting ? "Please wait..." : mode === "login" ? "Log in" : "Create account"}
           </Button>
         </form>
 
@@ -151,7 +208,7 @@ export default function LoginPage() {
           {mode === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
           <button
             type="button"
-            onClick={() => setMode(mode === "login" ? "signup" : "login")}
+            onClick={() => switchMode(mode === "login" ? "signup" : "login")}
             className="font-semibold text-brand-700 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
           >
             {mode === "login" ? "Sign up" : "Log in"}
