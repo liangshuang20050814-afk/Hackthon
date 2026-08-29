@@ -4,6 +4,7 @@
 // this file's props.
 import { db } from "@/lib/db";
 import { Card } from "@/components/ui/Card";
+import { StartConversationButton } from "@/components/chat/StartConversationButton";
 import { notFound } from "next/navigation";
 
 export default async function ProfilePage({ params }: { params: { studentId: string } }) {
@@ -25,6 +26,9 @@ export default async function ProfilePage({ params }: { params: { studentId: str
       <p className="text-gray-600">
         {student.faculty} · Year {student.yearOfStudy}
       </p>
+      <div>
+        <StartConversationButton studentId={student.id} />
+      </div>
       {student.bio && <p>{student.bio}</p>}
 
       <Card>
