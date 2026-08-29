@@ -16,7 +16,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Logo } from "./Logo";
-import { getCurrentStudentIdClient, initialsOf } from "@/lib/profileForm";
+import { StudentAvatar } from "./StudentAvatar";
+import { getCurrentStudentIdClient } from "@/lib/profileForm";
 
 const TABS = [
   { href: "/schedule", label: "Timetable" }, // [B]
@@ -47,13 +48,7 @@ function CurrentUserButton() {
       aria-label={user ? `Edit your profile, ${user.name}` : "Edit your profile"}
       className="flex shrink-0 items-center gap-2 rounded-full py-1 pl-1 pr-1 transition-colors hover:bg-brand-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 sm:pr-3"
     >
-      {user?.avatarUrl ? (
-        <img src={user.avatarUrl} alt="" className="h-7 w-7 rounded-full object-cover" />
-      ) : (
-        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-[10px] font-bold text-white">
-          {user ? initialsOf(user.name) : ""}
-        </div>
-      )}
+      <StudentAvatar name={user?.name ?? "Profile"} avatarUrl={user?.avatarUrl} size="xs" />
       <span className="hidden text-sm font-semibold text-ink sm:inline">{user?.name ?? "Profile"}</span>
     </Link>
   );

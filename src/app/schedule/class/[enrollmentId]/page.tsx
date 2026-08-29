@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { db } from "@/lib/db";
 import { getCurrentStudentId } from "@/lib/demo-user";
+import { StudentAvatar } from "@/components/ui/StudentAvatar";
 import { computeMatchScore } from "@/lib/matching/scoring";
 import { NON_PLACEHOLDER_STUDENT_WHERE } from "@/lib/students/filters";
 
@@ -91,13 +92,7 @@ export default async function ClassClassmatesPage({ params }: { params: { enroll
           {classmates.map(({ student, score, courseSessions }) => (
             <Card key={student.id} className="flex h-full flex-col">
               <div className="flex items-center gap-3">
-                {student.avatarUrl ? (
-                  <img src={student.avatarUrl} alt="" className="h-14 w-14 rounded-full bg-brand-50 object-cover" />
-                ) : (
-                  <div aria-hidden="true" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 to-brand-700 font-display text-lg font-bold text-white">
-                    {student.name.slice(0, 1).toUpperCase()}
-                  </div>
-                )}
+                <StudentAvatar name={student.name} avatarUrl={student.avatarUrl} size="lg" />
                 <div className="min-w-0 flex-1">
                   <h3 className="truncate font-display text-lg font-bold text-ink">{student.name}</h3>
                   <p className="truncate text-sm text-ink-muted">{student.major || student.faculty} · Year {student.yearOfStudy}</p>

@@ -5,6 +5,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
+import { StudentAvatar } from "@/components/ui/StudentAvatar";
 import { getCurrentStudentId } from "@/lib/demo-user";
 
 const CURRENT_STUDENT_ID = getCurrentStudentId();
@@ -57,9 +58,10 @@ export default function ChatListPage() {
         {conversations.map((conversation) => (
           <Link key={conversation.id} href={`/chat/${conversation.id}`}>
             <Card className="flex items-center gap-4 hover:-translate-y-0.5 hover:shadow-glass">
-              <Avatar
+              <StudentAvatar
                 name={conversation.otherStudent.name}
                 avatarUrl={conversation.otherStudent.avatarUrl}
+                size="lg"
               />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-3">
@@ -83,18 +85,6 @@ export default function ChatListPage() {
   );
 }
 
-function Avatar({ name, avatarUrl }: { name: string; avatarUrl: string | null }) {
-  if (avatarUrl) {
-    return <img src={avatarUrl} alt={name} className="h-12 w-12 rounded-full object-cover" />;
-  }
-
-  return (
-    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 to-brand-700 text-sm font-bold text-white shadow-soft">
-      {initialsOf(name)}
-    </div>
-  );
-}
-
 function ConversationSkeleton() {
   return (
     <div className="flex flex-col gap-3" aria-label="Loading conversations">
@@ -109,12 +99,6 @@ function ConversationSkeleton() {
       ))}
     </div>
   );
-}
-
-function initialsOf(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
 }
 
 function formatTime(value: string) {

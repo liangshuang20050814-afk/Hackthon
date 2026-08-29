@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { getCurrentStudentId } from "@/lib/demo-user";
+import { StudentAvatar } from "@/components/ui/StudentAvatar";
 import { computeMatchScore } from "@/lib/matching/scoring";
 import { NON_PLACEHOLDER_STUDENT_WHERE } from "@/lib/students/filters";
 
@@ -63,7 +64,7 @@ export default async function ClassmatesPage() {
         <Link key={student.id} href={`/profile/${student.id}`} className="rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
           <Card className="transition-shadow hover:shadow-md">
             <div className="flex items-center gap-3">
-              <img src={student.avatarUrl ?? "/avatars/placeholder.png"} alt="" className="h-12 w-12 rounded-full bg-gray-100 object-cover" />
+              <StudentAvatar name={student.name} avatarUrl={student.avatarUrl} size="lg" />
               <div className="min-w-0 flex-1"><p className="font-semibold">{student.name}</p><p className="text-sm text-gray-600">{student.faculty} · Year {student.yearOfStudy}</p></div>
               <div className="flex shrink-0 flex-col items-end gap-1">
                 <span className="rounded-full bg-brand px-3 py-1 text-sm font-bold text-white">{score}%</span>

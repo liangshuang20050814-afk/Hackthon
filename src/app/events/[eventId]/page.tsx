@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { StudentAvatar } from "@/components/ui/StudentAvatar";
 
 interface EventDetail {
   id: string; title: string; description: string; location: string; eventType: string; startsAt: string;
@@ -63,7 +64,7 @@ export default function EventDetailPage({ params }: { params: { eventId: string 
 
       <section className="mt-8"><h2 className="font-display text-xl font-bold text-ink">Who's going</h2><div className="mt-4 grid gap-3 sm:grid-cols-2">
         {event.attendees.map(({ student }) => <Link key={student.id} href={`/profile/${student.id}`} className="flex items-center gap-3 rounded-2xl border border-brand-100 bg-white p-4 shadow-soft hover:border-brand-300">
-          {student.avatarUrl ? <img src={student.avatarUrl} alt="" className="h-11 w-11 rounded-full object-cover" /> : <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-600 font-bold text-white">{student.name[0]}</span>}
+          <StudentAvatar name={student.name} avatarUrl={student.avatarUrl} size="md" />
           <span><span className="block font-semibold text-ink">{student.name}</span><span className="block text-xs text-ink-muted">{student.major || student.faculty} · Year {student.yearOfStudy}</span></span>
         </Link>)}
       </div></section>
