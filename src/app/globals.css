@@ -69,10 +69,14 @@ body {
   inset: 0;
   overflow: hidden;
   pointer-events: none;
+  /* Kept deliberately sheer. This layer paints on top of the header's
+     blurred backdrop, so its alpha is what decides how much of the page
+     shows through the bar — at the ~0.7 it used to be, the frosting was
+     doing work nobody could see. */
   background:
-    radial-gradient(ellipse 70% 140% at 22% 0%, rgba(139, 123, 240, 0.26) 0%, transparent 62%),
-    radial-gradient(ellipse 60% 130% at 78% 100%, rgba(108, 93, 234, 0.2) 0%, transparent 62%),
-    linear-gradient(105deg, rgba(233, 230, 253, 0.72) 0%, rgba(214, 208, 252, 0.6) 48%, rgba(228, 223, 255, 0.7) 100%);
+    radial-gradient(ellipse 70% 140% at 22% 0%, rgba(139, 123, 240, 0.18) 0%, transparent 62%),
+    radial-gradient(ellipse 60% 130% at 78% 100%, rgba(108, 93, 234, 0.14) 0%, transparent 62%),
+    linear-gradient(105deg, rgba(233, 230, 253, 0.34) 0%, rgba(214, 208, 252, 0.24) 48%, rgba(228, 223, 255, 0.32) 100%);
 }
 
 /* Orbit arcs. Very flat ellipses centred on the header, so what actually
@@ -287,6 +291,10 @@ body {
 .nav-avatar-orbit::before {
   position: absolute;
   z-index: -1;
+  /* Decorative only. Without this the ellipse — a 1400px box living inside
+     the profile <a> — is part of that link's hit area, so hovering or
+     clicking almost anywhere in the bar activated the profile button. */
+  pointer-events: none;
   right: 50%;
   top: 50%;
   width: 1400px;
@@ -307,6 +315,9 @@ body {
 .nav-logo::before {
   position: absolute;
   z-index: -1;
+  /* Same reason as .nav-avatar-orbit::before — the halo shouldn't extend
+     the logo link's clickable area past the mark itself. */
+  pointer-events: none;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(139, 123, 240, 0.4) 0%, rgba(174, 163, 247, 0.22) 48%, transparent 70%);
   content: "";

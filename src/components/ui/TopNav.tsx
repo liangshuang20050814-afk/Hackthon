@@ -133,7 +133,7 @@ export function TopNav() {
   // would cancel the frosting if it carried the filter. Its own colours are
   // translucent so page content stays visible through the bar.
   return (
-    <header className="sticky top-0 z-50 overflow-hidden border-b border-white/60 bg-white/50 shadow-soft backdrop-blur-xl">
+    <header className="sticky top-0 z-50 overflow-hidden border-b border-white/50 bg-white/30 shadow-soft backdrop-blur-2xl backdrop-saturate-150">
       {/* Decorative layers, behind the content (which is z-10) and inert to
           the pointer. The bottom beam replaces the old flat border. */}
       <div className="nav-galaxy" aria-hidden="true">
