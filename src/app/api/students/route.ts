@@ -9,9 +9,11 @@
 // creating a second one, so this file no longer needs its own POST.
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { NON_PLACEHOLDER_STUDENT_WHERE } from "@/lib/students/filters";
 
 export async function GET() {
   const students = await db.student.findMany({
+    where: NON_PLACEHOLDER_STUDENT_WHERE,
     include: { interests: true, enrollments: { include: { course: true } } },
   });
   const safe = students.map(({ passwordHash, ...student }) => student);

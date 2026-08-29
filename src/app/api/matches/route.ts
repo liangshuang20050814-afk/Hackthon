@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { computeMatchScore } from "@/lib/matching/scoring";
+import { NON_PLACEHOLDER_STUDENT_WHERE } from "@/lib/students/filters";
 import type { MatchReason, MatchResult, StudentSummary } from "@/lib/types";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -42,7 +43,7 @@ export async function GET(request: Request) {
       include: { interests: true, enrollments: { include: { course: true } } },
     }),
     db.student.findMany({
-      where: { id: { not: studentId } },
+      where: { id: { not: studentId }, ...NON_PLACEHOLDER_STUDENT_WHERE },
       include: { interests: true, enrollments: { include: { course: true } } },
     }),
   ]);

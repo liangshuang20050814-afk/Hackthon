@@ -1,5 +1,6 @@
 // [Owner: C] Single chat message bubble.
 import type { ChatMessage } from "@/lib/polling/useChatPolling";
+import { StudentAvatar } from "@/components/ui/StudentAvatar";
 
 export function MessageBubble({
   message,
@@ -12,7 +13,7 @@ export function MessageBubble({
 }) {
   return (
     <div className={`flex items-end gap-2 ${isOwn ? "justify-end" : "justify-start"}`}>
-      {!isOwn && <SenderAvatar name={message.sender.name} avatarUrl={message.sender.avatarUrl} />}
+      {!isOwn && <StudentAvatar name={message.sender.name} avatarUrl={message.sender.avatarUrl} size="sm" />}
       <div
         className={`flex max-w-[75%] flex-col gap-2 rounded-2xl px-3 py-2 text-sm ${
           isOwn ? "bg-brand text-white" : "bg-gray-100 text-gray-900"
@@ -47,36 +48,9 @@ export function MessageBubble({
           {formatMessageTime(message.sentAt)}
         </time>
       </div>
-      {isOwn && <SenderAvatar name={message.sender.name} avatarUrl={message.sender.avatarUrl} />}
+      {isOwn && <StudentAvatar name={message.sender.name} avatarUrl={message.sender.avatarUrl} size="sm" />}
     </div>
   );
-}
-
-function SenderAvatar({ name, avatarUrl }: { name: string; avatarUrl: string | null }) {
-  if (avatarUrl) {
-    return (
-      <img
-        src={avatarUrl}
-        alt={name}
-        className="h-8 w-8 shrink-0 rounded-full object-cover shadow-soft"
-      />
-    );
-  }
-
-  return (
-    <div
-      aria-label={name}
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 to-brand-700 text-xs font-bold text-white shadow-soft"
-    >
-      {initialsOf(name)}
-    </div>
-  );
-}
-
-function initialsOf(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
 }
 
 function formatMessageTime(value: string) {

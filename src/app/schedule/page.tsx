@@ -4,6 +4,41 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { TimetableGrid, TimetableSession } from "@/components/schedule/TimetableGrid";
 
+interface JoinedEvent {
+  id: string;
+  title: string;
+  eventType: string;
+  startsAt: string;
+  durationMinutes: number;
+  location: string;
+}
+
+function formatTime(date: Date) {
+  return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+}
+
+function eventToTimetableSessions(event: JoinedEvent): TimetableSession[] {
+  const start = new Date(event.startsAt);
+  const end = new Date(start.getTime() + event.durationMinutes * 60_000);
+  const dayOfWeek = (start.getDay() + 6) % 7;
+  const common = {
+    kind: "event" as const,
+    eventId: event.id,
+    location: event.location || null,
+    title: event.title,
+    eventType: event.eventType,
+    dateLabel: start.toLocaleDateString([], { month: "short", day: "numeric" }),
+  };
+
+  if (start.toDateString() === end.toDateString()) {
+    return [{ ...common, id: `event-${event.id}`, dayOfWeek, startTime: formatTime(start), endTime: formatTime(end) }];
+  }
+  return [
+    { ...common, id: `event-${event.id}-start`, dayOfWeek, startTime: formatTime(start), endTime: "23:59" },
+    { ...common, id: `event-${event.id}-end`, dayOfWeek: (dayOfWeek + 1) % 7, startTime: "00:00", endTime: formatTime(end), dateLabel: end.toLocaleDateString([], { month: "short", day: "numeric" }) },
+  ];
+}
+
 type Notice = { kind: "success" | "error"; text: string } | null;
 
 export default function SchedulePage() {
@@ -14,9 +49,14 @@ export default function SchedulePage() {
 
   const loadSchedule = useCallback(async () => {
     try {
-      const response = await fetch("/api/schedule", { cache: "no-store" });
-      if (!response.ok) throw new Error("Could not load your timetable.");
-      setSessions(await response.json());
+      const [scheduleResponse, eventsResponse] = await Promise.all([
+        fetch("/api/schedule", { cache: "no-store" }),
+        fetch("/api/events?mine=true", { cache: "no-store" }),
+      ]);
+      if (!scheduleResponse.ok || !eventsResponse.ok) throw new Error("Could not load your timetable.");
+      const classes: TimetableSession[] = await scheduleResponse.json();
+      const events: JoinedEvent[] = await eventsResponse.json();
+      setSessions([...classes, ...events.flatMap(eventToTimetableSessions)]);
     } catch (error) {
       setNotice({
         kind: "error",
@@ -33,6 +73,7 @@ export default function SchedulePage() {
 
   async function handleDelete(id: string) {
     const session = sessions.find((item) => item.id === id);
+    if (!session || session.kind === "event") return;
     const confirmed = window.confirm(
       `Remove ${session?.course.code ?? "this class"} from your timetable? This cannot be undone.`,
     );

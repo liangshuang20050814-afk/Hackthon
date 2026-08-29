@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 
-export interface TimetableSession {
+export interface TimetableClassSession {
+  kind?: "class";
   id: string;
   dayOfWeek: number;
   startTime: string;
@@ -11,6 +12,21 @@ export interface TimetableSession {
   location: string | null;
   course: { id: string; code: string; name: string };
 }
+
+export interface TimetableEventSession {
+  kind: "event";
+  id: string;
+  eventId: string;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  location: string | null;
+  title: string;
+  eventType: string;
+  dateLabel: string;
+}
+
+export type TimetableSession = TimetableClassSession | TimetableEventSession;
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
@@ -85,7 +101,7 @@ export function TimetableGrid({
     <section aria-label="Weekly timetable" className="glass-surface overflow-hidden rounded-3xl">
       {sessions.length === 0 && (
         <div className="border-b border-brand-100 bg-brand-50/70 px-4 py-3 text-center text-sm text-ink-muted">
-          Your timetable is empty. Use “Add class” to add your first class.
+          Your timetable is empty. Add a class or join a campus event to get started.
         </div>
       )}
       <div ref={scrollAreaRef} className="min-h-[520px] max-h-[72vh] overflow-auto">
@@ -122,11 +138,17 @@ export function TimetableGrid({
                       const top = (start / 60) * HOUR_HEIGHT;
                       const height = Math.max(((end - start) / 60) * HOUR_HEIGHT, 28);
                       const columnWidth = 100 / columnCount;
+                      const isEvent = session.kind === "event";
+                      const label = isEvent ? session.title : session.course.code;
                       return (
                         <article
                           key={session.id}
-                          className={`absolute z-10 overflow-hidden rounded-lg border bg-brand-100/95 text-[10px] shadow-sm transition hover:z-20 hover:shadow-glass ${
-                            editing ? "border-dashed border-brand-600 ring-1 ring-brand-200" : "border-brand-300"
+                          className={`absolute z-10 overflow-hidden rounded-lg border text-[10px] shadow-sm transition hover:z-20 hover:shadow-glass ${
+                            isEvent
+                              ? "border-amber-300 bg-amber-100/95"
+                              : editing
+                                ? "border-dashed border-brand-600 bg-brand-100/95 ring-1 ring-brand-200"
+                                : "border-brand-300 bg-brand-100/95"
                           }`}
                           style={{
                             top,
@@ -136,16 +158,17 @@ export function TimetableGrid({
                           }}
                         >
                           <Link
-                            href={editing ? `/schedule/edit/${session.id}` : `/schedule/class/${session.id}`}
+                            href={isEvent ? `/events/${session.eventId}` : editing ? `/schedule/edit/${session.id}` : `/schedule/class/${session.id}`}
                             className="block h-full px-2 py-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-brand-600"
-                            title={`${editing ? "Edit" : "View classmates for"} ${session.course.code} · ${session.startTime}–${session.endTime}${session.location ? ` · ${session.location}` : ""}`}
+                            title={`${isEvent ? "View event" : editing ? "Edit" : "View classmates for"} ${label} · ${session.startTime}–${session.endTime}${session.location ? ` · ${session.location}` : ""}`}
                           >
-                            <p className="truncate pr-4 font-bold text-brand-800">{session.course.code}</p>
+                            <p className={`truncate pr-4 font-bold ${isEvent ? "text-amber-900" : "text-brand-800"}`}>{isEvent ? `● ${label}` : label}</p>
                             <p className="truncate text-ink-muted">{session.startTime}–{session.endTime}</p>
+                            {isEvent && height >= 48 && <p className="truncate text-amber-800">{session.eventType} · {session.dateLabel}</p>}
                             {height >= 48 && session.location && <p className="truncate text-ink-muted">{session.location}</p>}
-                            {editing && height >= 72 && <p className="mt-1 font-semibold text-brand-700">Edit class</p>}
+                            {!isEvent && editing && height >= 72 && <p className="mt-1 font-semibold text-brand-700">Edit class</p>}
                           </Link>
-                          {editing && onDelete && (
+                          {!isEvent && editing && onDelete && (
                             <button
                               type="button"
                               onClick={() => onDelete(session.id)}

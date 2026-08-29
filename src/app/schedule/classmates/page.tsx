@@ -1,11 +1,13 @@
-// [Owner: B] Lists students who share at least one course with the current
+// [Owner: B] Lists students who share at least one course code with the current
 // user, then links into D's shared profile page. This is the second half of
 // the schedule flow (manual entry -> ICS parse -> THIS -> profile).
 import { db } from "@/lib/db";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { getCurrentStudentId } from "@/lib/demo-user";
+import { StudentAvatar } from "@/components/ui/StudentAvatar";
 import { computeMatchScore } from "@/lib/matching/scoring";
+import { NON_PLACEHOLDER_STUDENT_WHERE } from "@/lib/students/filters";
 
 export const dynamic = "force-dynamic";
 
@@ -16,14 +18,15 @@ export default async function ClassmatesPage() {
     include: { interests: true, enrollments: { include: { course: true } } },
   });
 
-  const myCourseIds = me?.enrollments.map((e) => e.courseId) ?? [];
+  const myCourseCodes = uniqueCourses(me?.enrollments ?? []).map((course) => course.code.toUpperCase());
   const myCourses = uniqueCourses(me?.enrollments ?? []).map(({ code, name }) => ({ code, name }));
   const myInterests = me?.interests.map((interest) => interest.label) ?? [];
 
   const classmates = await db.student.findMany({
     where: {
       id: { not: currentStudentId },
-      enrollments: { some: { courseId: { in: myCourseIds } } },
+      ...NON_PLACEHOLDER_STUDENT_WHERE,
+      enrollments: { some: { course: { code: { in: myCourseCodes } } } },
     },
     include: { interests: true, enrollments: { include: { course: true } } },
   });
@@ -32,8 +35,8 @@ export default async function ClassmatesPage() {
     .map((student) => {
       const sharedById = new Map(
         student.enrollments
-          .filter((enrollment) => myCourseIds.includes(enrollment.courseId))
-          .map((enrollment) => [enrollment.courseId, enrollment.course]),
+          .filter((enrollment) => myCourseCodes.includes(enrollment.course.code.toUpperCase()))
+          .map((enrollment) => [enrollment.course.code.toUpperCase(), enrollment.course]),
       );
       const { score } = computeMatchScore({
         studentACourses: myCourses,
@@ -55,13 +58,13 @@ export default async function ClassmatesPage() {
         <h1 className="mt-2 text-2xl font-bold">Your classmates</h1>
         <p className="mt-1 text-sm text-gray-600">People who share at least one course with you.</p>
       </div>
-      {myCourseIds.length === 0 && <Card><p className="font-medium">Add classes before looking for classmates.</p></Card>}
-      {myCourseIds.length > 0 && results.length === 0 && <Card><p className="font-medium">No classmates found yet.</p><p className="mt-1 text-sm text-gray-600">More seeded students can appear here without any UI changes.</p></Card>}
+      {myCourseCodes.length === 0 && <Card><p className="font-medium">Add classes before looking for classmates.</p></Card>}
+      {myCourseCodes.length > 0 && results.length === 0 && <Card><p className="font-medium">No classmates found yet.</p><p className="mt-1 text-sm text-gray-600">More seeded students can appear here without any UI changes.</p></Card>}
       {results.map(({ student, sharedCourses, score }) => (
         <Link key={student.id} href={`/profile/${student.id}`} className="rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
           <Card className="transition-shadow hover:shadow-md">
             <div className="flex items-center gap-3">
-              <img src={student.avatarUrl ?? "/avatars/placeholder.png"} alt="" className="h-12 w-12 rounded-full bg-gray-100 object-cover" />
+              <StudentAvatar name={student.name} avatarUrl={student.avatarUrl} size="lg" />
               <div className="min-w-0 flex-1"><p className="font-semibold">{student.name}</p><p className="text-sm text-gray-600">{student.faculty} · Year {student.yearOfStudy}</p></div>
               <div className="flex shrink-0 flex-col items-end gap-1">
                 <span className="rounded-full bg-brand px-3 py-1 text-sm font-bold text-white">{score}%</span>
@@ -82,5 +85,5 @@ export default async function ClassmatesPage() {
 function uniqueCourses(
   enrollments: { courseId: string; course: { id: string; code: string; name: string } }[],
 ): { id: string; code: string; name: string }[] {
-  return Array.from(new Map(enrollments.map((enrollment) => [enrollment.courseId, enrollment.course])).values());
+  return Array.from(new Map(enrollments.map((enrollment) => [enrollment.course.code.toUpperCase(), enrollment.course])).values());
 }

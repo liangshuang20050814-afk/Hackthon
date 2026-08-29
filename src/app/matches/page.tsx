@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { DEMO_STUDENT_ID } from "@/lib/demo-user";
 import type { MatchResult, StudentSummary } from "@/lib/types";
+import { StudentAvatar } from "@/components/ui/StudentAvatar";
 
 type MatchWithStudent = MatchResult & { student: StudentSummary };
 
@@ -81,16 +82,7 @@ function MatchCard({ match }: { match: MatchWithStudent }) {
     >
       <Card className="flex flex-col gap-4 p-6 transition-shadow hover:shadow-md">
         <div className="flex items-center gap-3">
-          {match.student.avatarUrl ? (
-            <img src={match.student.avatarUrl} alt="" className="h-14 w-14 rounded-full bg-brand-50 object-cover" />
-          ) : (
-            <div
-              aria-hidden="true"
-              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 to-brand-700 font-display text-lg font-bold text-white"
-            >
-              {match.student.name.slice(0, 1).toUpperCase()}
-            </div>
-          )}
+          <StudentAvatar name={match.student.name} avatarUrl={match.student.avatarUrl} size="lg" />
           <div className="min-w-0 flex-1">
             <h2 className="truncate font-display text-lg font-bold text-ink">{match.student.name}</h2>
             <p className="truncate text-sm text-ink-muted">
