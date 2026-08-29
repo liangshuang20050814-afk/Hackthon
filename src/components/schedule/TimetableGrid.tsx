@@ -22,11 +22,56 @@ function timeToMinutes(time: string) {
   return hour * 60 + minute;
 }
 
+interface PositionedSession {
+  session: TimetableSession;
+  column: number;
+  columnCount: number;
+}
+
+function positionOverlappingSessions(sessions: TimetableSession[]): PositionedSession[] {
+  const sorted = [...sessions].sort(
+    (a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime) || timeToMinutes(a.endTime) - timeToMinutes(b.endTime),
+  );
+  const groups: TimetableSession[][] = [];
+  let currentGroup: TimetableSession[] = [];
+  let groupEnd = -1;
+
+  for (const session of sorted) {
+    const start = timeToMinutes(session.startTime);
+    if (currentGroup.length === 0 || start < groupEnd) {
+      currentGroup.push(session);
+      groupEnd = Math.max(groupEnd, timeToMinutes(session.endTime));
+    } else {
+      groups.push(currentGroup);
+      currentGroup = [session];
+      groupEnd = timeToMinutes(session.endTime);
+    }
+  }
+  if (currentGroup.length > 0) groups.push(currentGroup);
+
+  return groups.flatMap((group) => {
+    const columnEnds: number[] = [];
+    const placed = group.map((session) => {
+      const start = timeToMinutes(session.startTime);
+      let column = columnEnds.findIndex((end) => end <= start);
+      if (column === -1) {
+        column = columnEnds.length;
+        columnEnds.push(0);
+      }
+      columnEnds[column] = timeToMinutes(session.endTime);
+      return { session, column };
+    });
+    return placed.map(({ session, column }) => ({ session, column, columnCount: columnEnds.length }));
+  });
+}
+
 export function TimetableGrid({
   sessions,
+  editing = false,
   onDelete,
 }: {
   sessions: TimetableSession[];
+  editing?: boolean;
   onDelete?: (id: string) => void;
 }) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -71,27 +116,36 @@ export function TimetableGrid({
               <div className="absolute inset-0 grid grid-cols-7">
                 {DAY_LABELS.map((dayLabel, dayIndex) => (
                   <div key={dayLabel} className="relative border-r border-brand-100/80 last:border-r-0">
-                    {sessions.filter((session) => session.dayOfWeek === dayIndex).map((session) => {
+                    {positionOverlappingSessions(sessions.filter((session) => session.dayOfWeek === dayIndex)).map(({ session, column, columnCount }) => {
                       const start = timeToMinutes(session.startTime);
                       const end = timeToMinutes(session.endTime);
                       const top = (start / 60) * HOUR_HEIGHT;
                       const height = Math.max(((end - start) / 60) * HOUR_HEIGHT, 28);
+                      const columnWidth = 100 / columnCount;
                       return (
                         <article
                           key={session.id}
-                          className="absolute left-1 right-1 z-10 overflow-hidden rounded-lg border border-brand-300 bg-brand-100/95 text-[10px] shadow-sm transition hover:z-20 hover:shadow-glass"
-                          style={{ top, height }}
+                          className={`absolute z-10 overflow-hidden rounded-lg border bg-brand-100/95 text-[10px] shadow-sm transition hover:z-20 hover:shadow-glass ${
+                            editing ? "border-dashed border-brand-600 ring-1 ring-brand-200" : "border-brand-300"
+                          }`}
+                          style={{
+                            top,
+                            height,
+                            left: `calc(${column * columnWidth}% + 3px)`,
+                            width: `calc(${columnWidth}% - 6px)`,
+                          }}
                         >
                           <Link
-                            href={`/schedule/class/${session.id}`}
+                            href={editing ? `/schedule/edit/${session.id}` : `/schedule/class/${session.id}`}
                             className="block h-full px-2 py-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-brand-600"
-                            title={`${session.course.code} · ${session.startTime}–${session.endTime}${session.location ? ` · ${session.location}` : ""} · View classmates`}
+                            title={`${editing ? "Edit" : "View classmates for"} ${session.course.code} · ${session.startTime}–${session.endTime}${session.location ? ` · ${session.location}` : ""}`}
                           >
                             <p className="truncate pr-4 font-bold text-brand-800">{session.course.code}</p>
                             <p className="truncate text-ink-muted">{session.startTime}–{session.endTime}</p>
                             {height >= 48 && session.location && <p className="truncate text-ink-muted">{session.location}</p>}
+                            {editing && height >= 72 && <p className="mt-1 font-semibold text-brand-700">Edit class</p>}
                           </Link>
-                          {onDelete && (
+                          {editing && onDelete && (
                             <button
                               type="button"
                               onClick={() => onDelete(session.id)}
