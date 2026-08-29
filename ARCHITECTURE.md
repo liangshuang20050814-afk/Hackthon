@@ -19,7 +19,7 @@ Hackthon/
 │
 ├── src/
 │   ├── app/                          # Next.js App Router — one folder per route
-│   │   ├── layout.tsx                # [D] Root layout, wraps every page in BottomNav
+│   │   ├── layout.tsx                # [D] Root layout, wraps every page in TopNav
 │   │   ├── page.tsx                  # [D] Landing page
 │   │   ├── globals.css               # [D] Design tokens (color/spacing) + Tailwind base
 │   │   │
@@ -50,7 +50,8 @@ Hackthon/
 │   │   │   ├── Card.tsx
 │   │   │   ├── AvatarGroup.tsx
 │   │   │   ├── Button.tsx
-│   │   │   └── BottomNav.tsx
+│   │   │   ├── Logo.tsx
+│   │   │   └── TopNav.tsx           # sticky header nav, not a bottom bar
 │   │   ├── schedule/TimetableGrid.tsx   # [B]
 │   │   ├── chat/MessageBubble.tsx       # [C]
 │   │   └── events/EventCard.tsx         # [C]
@@ -128,7 +129,7 @@ A: schema + seed  ──────────────┬──▶ B: sche
                                  ├──▶ C: chat/events UI (needs Student rows)
                                  └──▶ A: matching engine (needs seeded overlaps to score)
 
-D: shared ui/ components ───────┬──▶ B: schedule pages use Card/BottomNav
+D: shared ui/ components ───────┬──▶ B: schedule pages use Card/TopNav
                                  ├──▶ C: chat/events pages use Card/Button
                                  └──▶ D: profile + login pages (uses own components)
 

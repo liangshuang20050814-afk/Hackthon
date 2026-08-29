@@ -20,7 +20,7 @@ if they were used consistently.
 - [ ] Every interactive element (button, link, form field) is reachable via
       Tab in a logical order.
 - [ ] Focus is visible on every interactive element (see `Button.tsx` and
-      `BottomNav.tsx` for the `focus-visible:outline` pattern — replicate it
+      `TopNav.tsx` for the `focus-visible:outline` pattern — replicate it
       anywhere a custom clickable element was added).
 - [ ] `Card` components used as clickable rows (`onClick` prop) are
       reachable and activatable with Enter/Space, not just mouse click.
@@ -31,7 +31,7 @@ if they were used consistently.
       never empty `alt=""` on a person's avatar (see `AvatarGroup.tsx`).
 - [ ] Form inputs have associated `<label>` elements (see `schedule/page.tsx`
       and `chat/[conversationId]/page.tsx` for the pattern).
-- [ ] `BottomNav` links use `aria-current="page"` for the active tab (already
+- [ ] `TopNav` links use `aria-current="page"` for the active tab (already
       implemented — verify it survived any redesign).
 
 ## Sign-off

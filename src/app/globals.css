@@ -8,11 +8,26 @@
 @tailwind utilities;
 
 :root {
-  --color-text: #111827;
-  --color-background: #ffffff;
+  --color-text: #242235;
+  --color-background: #fbfaff;
 }
 
 body {
   color: var(--color-text);
-  background: var(--color-background);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  /* White-dominant with a faint indigo wash in the corners — most of the
+     viewport reads as white, the tint only shows at the edges. */
+  background-color: var(--color-background);
+  background-image: radial-gradient(ellipse 800px 500px at 100% 0%, rgba(139, 123, 240, 0.14), transparent 60%),
+    radial-gradient(ellipse 700px 480px at 0% 100%, rgba(139, 123, 240, 0.1), transparent 55%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+@layer components {
+  /* Shared frosted-glass surface. Kept mostly opaque (70%+) so text inside
+     still clears AA contrast regardless of what scrolls behind it. */
+  .glass-surface {
+    @apply border border-white/60 bg-white/70 shadow-soft backdrop-blur-xl;
+  }
 }

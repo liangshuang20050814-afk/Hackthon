@@ -15,13 +15,21 @@ datasource db {
 // --- Core identity -----------------------------------------------------
 
 model Student {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
   avatarUrl   String?
   bio         String?
   faculty     String // e.g. "Engineering", "Arts & Social Sciences"
   yearOfStudy Int
-  createdAt   DateTime @default(now())
+  // [Owner: D] Optional onboarding fields — all skippable, collected in
+  // src/app/onboarding/page.tsx step 2 ("More about you"). Not part of the
+  // matching contract (see MatchReason in lib/types.ts); purely profile
+  // color for now.
+  major     String?
+  birthday  DateTime?
+  gender    String?
+  mbti      String?
+  createdAt DateTime  @default(now())
 
   interests   Interest[]
   enrollments Enrollment[] // [Owner: B] populated via manual entry or ICS upload

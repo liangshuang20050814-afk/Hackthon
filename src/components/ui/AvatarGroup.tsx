@@ -17,7 +17,7 @@ export function AvatarGroup({ people, max = 4 }: AvatarGroupProps) {
           key={person.id}
           src={person.avatarUrl ?? "/avatars/placeholder.png"}
           alt={person.name}
-          className="h-8 w-8 rounded-full border-2 border-white object-cover"
+          className="h-8 w-8 rounded-full border-2 border-white object-cover shadow-sm ring-1 ring-brand-100"
           style={{ marginLeft: i === 0 ? 0 : -8 }}
         />
       ))}

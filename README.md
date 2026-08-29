@@ -21,7 +21,7 @@ between owners, and the build order.
    real USYD course codes, deliberately overlapping timetables). Everyone else
    is blocked on this for real data.
 2. **D** ships shared UI primitives in `src/components/ui/` (Card, AvatarGroup,
-   Button, BottomNav, color tokens in `globals.css`) so B/C don't invent their
+   Button, TopNav, color tokens in `globals.css`) so B/C don't invent their
    own styles.
 3. **B** and **C** build against the seeded data + shared components as soon
    as both land.
