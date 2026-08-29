@@ -28,4 +28,8 @@ export interface StudentSummary {
   avatarUrl: string | null;
   faculty: string;
   yearOfStudy: number;
+  bio?: string | null;
+  major?: string | null;
+  mbti?: string | null;
+  interests?: string[];
 }

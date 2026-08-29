@@ -14,8 +14,11 @@ type StudentForMatching = {
   id: string;
   name: string;
   avatarUrl: string | null;
+  bio: string | null;
   faculty: string;
   yearOfStudy: number;
+  major: string | null;
+  mbti: string | null;
   interests: { label: string }[];
   enrollments: {
     dayOfWeek: number;
@@ -32,6 +35,7 @@ type MatchWithStudent = MatchResult & {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const studentId = searchParams.get("studentId");
+  const returnAll = searchParams.get("all") === "true";
 
   if (!studentId) {
     return NextResponse.json({ error: "studentId is required" }, { status: 400 });
@@ -53,7 +57,7 @@ export async function GET(request: Request) {
   }
 
   const matches = await buildGeneralMatches(me, others);
-  return NextResponse.json(matches[0] ?? null);
+  return NextResponse.json(returnAll ? matches : matches[0] ?? null);
 }
 
 async function buildGeneralMatches(
@@ -200,6 +204,10 @@ function toStudentSummary(student: StudentForMatching): StudentSummary {
     avatarUrl: student.avatarUrl,
     faculty: student.faculty,
     yearOfStudy: student.yearOfStudy,
+    bio: student.bio,
+    major: student.major,
+    mbti: student.mbti,
+    interests: student.interests.map((interest) => interest.label),
   };
 }
 
