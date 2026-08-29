@@ -26,6 +26,16 @@ async function main() {
     update: {},
     create: { code: "COMP2017", name: "Systems Programming" },
   });
+  const dataCourse = await prisma.course.upsert({
+    where: { code: "DATA1001" },
+    update: {},
+    create: { code: "DATA1001", name: "Foundations of Data Science" },
+  });
+  const infoCourse = await prisma.course.upsert({
+    where: { code: "INFO1110" },
+    update: {},
+    create: { code: "INFO1110", name: "Introduction to Programming" },
+  });
 
   const demoStudent = await prisma.student.upsert({
     where: { id: "demo-student-1" },
@@ -48,7 +58,132 @@ async function main() {
     },
   });
 
+  await prisma.student.upsert({
+    where: { id: "demo-student-2" },
+    update: {
+      name: "Mia Chen",
+      faculty: "Engineering",
+      yearOfStudy: 2,
+      bio: "Loves systems programming, campus coffee spots, and finding study partners before labs.",
+    },
+    create: {
+      id: "demo-student-2",
+      name: "Mia Chen",
+      faculty: "Engineering",
+      yearOfStudy: 2,
+      bio: "Loves systems programming, campus coffee spots, and finding study partners before labs.",
+      enrollments: {
+        create: [
+          {
+            courseId: demoCourse.id,
+            dayOfWeek: 2,
+            startTime: "14:00",
+            endTime: "16:00",
+            location: "Seed Building 101",
+          },
+          {
+            courseId: dataCourse.id,
+            dayOfWeek: 4,
+            startTime: "10:00",
+            endTime: "12:00",
+            location: "Carslaw 173",
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.student.upsert({
+    where: { id: "demo-student-3" },
+    update: {
+      name: "Noah Patel",
+      faculty: "Science",
+      yearOfStudy: 1,
+      bio: "Looking for friends to join sport events and debug first-year programming assignments.",
+    },
+    create: {
+      id: "demo-student-3",
+      name: "Noah Patel",
+      faculty: "Science",
+      yearOfStudy: 1,
+      bio: "Looking for friends to join sport events and debug first-year programming assignments.",
+      enrollments: {
+        create: [
+          {
+            courseId: infoCourse.id,
+            dayOfWeek: 1,
+            startTime: "09:00",
+            endTime: "11:00",
+            location: "ABS Lecture Theatre",
+          },
+          {
+            courseId: dataCourse.id,
+            dayOfWeek: 4,
+            startTime: "10:00",
+            endTime: "12:00",
+            location: "Carslaw 173",
+          },
+        ],
+      },
+    },
+  });
+
+  const conversationWithMia = await prisma.conversation.upsert({
+    where: {
+      studentAId_studentBId: {
+        studentAId: "demo-student-1",
+        studentBId: "demo-student-2",
+      },
+    },
+    update: {},
+    create: {
+      id: "demo-conversation-1",
+      studentAId: "demo-student-1",
+      studentBId: "demo-student-2",
+    },
+  });
+
+  const conversationWithNoah = await prisma.conversation.upsert({
+    where: {
+      studentAId_studentBId: {
+        studentAId: "demo-student-1",
+        studentBId: "demo-student-3",
+      },
+    },
+    update: {},
+    create: {
+      id: "demo-conversation-2",
+      studentAId: "demo-student-1",
+      studentBId: "demo-student-3",
+    },
+  });
+
+  await prisma.message.deleteMany({
+    where: { conversationId: { in: [conversationWithMia.id, conversationWithNoah.id] } },
+  });
+
+  await prisma.message.createMany({
+    data: [
+      {
+        conversationId: conversationWithMia.id,
+        senderId: "demo-student-2",
+        body: "Hey, we both have COMP2017 on Wednesday. Want to review pointers together?",
+      },
+      {
+        conversationId: conversationWithMia.id,
+        senderId: "demo-student-1",
+        body: "Yes! I am free after the lab. Fisher Library?",
+      },
+      {
+        conversationId: conversationWithNoah.id,
+        senderId: "demo-student-3",
+        body: "Are you going to the campus sport meetup this week?",
+      },
+    ],
+  });
+
   console.log(`Seeded placeholder student: ${demoStudent.name}`);
+  console.log("Seeded demo chat conversations for C.");
   console.log("TODO [A]: expand this to 30 students + events + interests.");
 }
 

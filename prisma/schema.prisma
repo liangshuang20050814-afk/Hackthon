@@ -118,6 +118,10 @@ model Message {
   senderId       String
   sender         Student      @relation(fields: [senderId], references: [id])
   body           String
+  attachmentUrl  String?
+  attachmentName String?
+  attachmentType String?
+  sticker        String?
   sentAt         DateTime     @default(now())
 
   @@index([conversationId, sentAt])
