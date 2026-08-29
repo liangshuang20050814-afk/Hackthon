@@ -1,0 +1,18 @@
+/* [Owner: D] Design tokens + Tailwind base. Extend tailwind.config.ts
+   `colors` for anything beyond one-off values here. Run the accessibility
+   pass against these tokens: text/background pairs must hit WCAG AA
+   contrast (4.5:1 for normal text). */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-text: #111827;
+  --color-background: #ffffff;
+}
+
+body {
+  color: var(--color-text);
+  background: var(--color-background);
+}

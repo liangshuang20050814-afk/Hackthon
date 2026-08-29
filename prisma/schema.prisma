@@ -1,0 +1,141 @@
+// [Owner: A] Source of truth for all data models.
+// B and C's features (schedule, chat, events) hang off Student, so changes
+// here should be flagged to the team before renaming/removing a field that
+// others' API routes already depend on.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// --- Core identity -----------------------------------------------------
+
+model Student {
+  id          String   @id @default(cuid())
+  name        String
+  avatarUrl   String?
+  bio         String?
+  faculty     String // e.g. "Engineering", "Arts & Social Sciences"
+  yearOfStudy Int
+  createdAt   DateTime @default(now())
+
+  interests   Interest[]
+  enrollments Enrollment[] // [Owner: B] populated via manual entry or ICS upload
+
+  matchesAsA Match[] @relation("MatchStudentA")
+  matchesAsB Match[] @relation("MatchStudentB")
+
+  conversationsAsA Conversation[] @relation("ConversationStudentA")
+  conversationsAsB Conversation[] @relation("ConversationStudentB")
+  messagesSent     Message[]
+
+  eventsAttending EventAttendee[]
+}
+
+model Interest {
+  id        String    @id @default(cuid())
+  label     String // e.g. "climbing", "board games", "machine learning"
+  students  Student[]
+}
+
+// --- Timetable [Owner: B] ------------------------------------------------
+
+model Course {
+  id          String       @id @default(cuid())
+  code        String       @unique // real USYD course code, e.g. "COMP2017"
+  name        String
+  enrollments Enrollment[]
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id])
+
+  // One row per weekly recurring session (lecture/tutorial/lab).
+  // This is the shape src/lib/ics/parser.ts must produce from an .ics file.
+  dayOfWeek Int // 0 = Monday .. 6 = Sunday
+  startTime String // "14:00" 24h local time
+  endTime   String // "16:00"
+  location  String?
+
+  @@index([studentId])
+  @@index([courseId])
+}
+
+// --- AI Matching [Owner: A] ----------------------------------------------
+
+// Precomputed/cached score + explanation for a pair of students, so the UI
+// never has to recompute src/lib/matching/scoring.ts on every render.
+// `reasonsJson` stores a serialized MatchReason[] (see src/lib/types.ts).
+model Match {
+  id           String   @id @default(cuid())
+  studentAId   String
+  studentA     Student  @relation("MatchStudentA", fields: [studentAId], references: [id])
+  studentBId   String
+  studentB     Student  @relation("MatchStudentB", fields: [studentBId], references: [id])
+  score        Int // 0-100
+  reasonsJson  String // JSON-encoded MatchReason[]
+  aiSummary    String // Claude-generated 1-2 sentence explanation
+  computedAt   DateTime @default(now())
+
+  @@unique([studentAId, studentBId])
+}
+
+// --- Chat [Owner: C] -------------------------------------------------
+
+model Conversation {
+  id         String   @id @default(cuid())
+  studentAId String
+  studentA   Student  @relation("ConversationStudentA", fields: [studentAId], references: [id])
+  studentBId String
+  studentB   Student  @relation("ConversationStudentB", fields: [studentBId], references: [id])
+  createdAt  DateTime @default(now())
+
+  messages Message[]
+
+  @@unique([studentAId, studentBId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  senderId       String
+  sender         Student      @relation(fields: [senderId], references: [id])
+  body           String
+  sentAt         DateTime     @default(now())
+
+  @@index([conversationId, sentAt])
+}
+
+// --- Events [Owner: C] -----------------------------------------------
+// No creation flow by design: seed.ts pre-populates events, the UI only
+// lists/details/joins them.
+
+model Event {
+  id          String          @id @default(cuid())
+  title       String
+  description String
+  location    String
+  startsAt    DateTime
+  imageUrl    String?
+  attendees   EventAttendee[]
+}
+
+model EventAttendee {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  joinedAt  DateTime @default(now())
+
+  @@unique([eventId, studentId])
+}
