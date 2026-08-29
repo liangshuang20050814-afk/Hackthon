@@ -55,6 +55,50 @@ body {
 }
 
 
+/* ---- Auth screens: the slogan --------------------------------------
+   Two coordinate lines, so both get identical type — the turn between
+   them is carried by colour and by the rule that draws between them, not
+   by size. The font is set off the CSS variable directly rather than
+   through a Tailwind fontFamily key; see .nav-tab-label for why that
+   route is unreliable here. */
+.auth-slogan {
+  font-family: var(--font-slogan), "Playfair Display", Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  line-height: 1.2;
+}
+
+/* Entrance: the two lines staggered, so it reads as a statement being made
+   rather than a block appearing. `both` holds the pre-state, so the second
+   line doesn't flash at full opacity before its turn. */
+.auth-slogan-1 {
+  animation: slogan-rise 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* The gradient is defined here, not with Tailwind's bg-gradient utilities,
+   because it needs a background-size wider than the text for the sheen to
+   have somewhere to travel. */
+.auth-slogan-2 {
+  background-image: linear-gradient(100deg, #6c5dea 0%, #4a3fc4 25%, #a08ff7 50%, #4a3fc4 75%, #6c5dea 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation:
+    slogan-rise 900ms cubic-bezier(0.22, 1, 0.36, 1) 450ms both,
+    slogan-sheen 9s linear 1.5s infinite;
+}
+
+@keyframes slogan-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slogan-sheen {
+  to { background-position: 220% 0; }
+}
+
 /* ---- Top nav: animated galaxy backdrop ------------------------------
    Twilight-indigo ground + orbit arcs + a static star field, with the
    only real motion coming from occasional meteors. All of it is
@@ -1277,6 +1321,8 @@ a:focus-visible .nav-tab-label::after {
   .nav-stars,
   .nav-beam,
   .nav-meteor,
+  .auth-slogan-1,
+  .auth-slogan-2,
   .nav-logo::before,
   .nav-tab-label--active::after {
     animation-duration: 1ms !important;

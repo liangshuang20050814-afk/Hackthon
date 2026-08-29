@@ -1,6 +1,6 @@
 // [Owner: D] Root layout — wraps every route in the shared TopNav.
 import type { Metadata } from "next";
-import { Poppins, Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
+import { Poppins, Plus_Jakarta_Sans, Space_Grotesk, Playfair_Display } from "next/font/google";
 import { TopNav } from "@/components/ui/TopNav";
 import "./globals.css";
 
@@ -24,6 +24,19 @@ const jakarta = Plus_Jakarta_Sans({
 // rather than as interface. Space Grotesk keeps the geometric/technical
 // feel with proper text proportions, and stays crisp set in caps with wide
 // tracking — which is where the "tech" character actually comes from here.
+// The auth-screen slogan. Deliberately not another geometric sans —
+// Poppins is a UI face and reads as a heading however large it's set,
+// which is why the tagline never felt like a tagline. Playfair's italic
+// carries genuine calligraphic flourish while keeping weight in the
+// strokes; the previous Instrument Serif was condensed and high-contrast,
+// which is what made it look spindly.
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-slogan",
+  display: "swap",
+});
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   weight: ["500", "600", "700"],
@@ -38,7 +51,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${poppins.variable} ${jakarta.variable} ${spaceGrotesk.variable}`}>
+    <html
+      lang="en"
+      className={`${poppins.variable} ${jakarta.variable} ${spaceGrotesk.variable} ${playfair.variable}`}
+    >
       <body>
         <TopNav />
         {children}
