@@ -30,7 +30,7 @@ export function EventCard({
         {joined && <span className="rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700">Joined</span>}
       </div>
       <h2 className="mt-3 font-display text-lg font-bold text-ink">{title}</h2>
-      <p className="mt-2 text-sm text-ink-muted">{new Date(startsAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}</p>
+      <p className="mt-2 text-sm text-ink-muted">{new Date(startsAt).toLocaleString("en-AU", { dateStyle: "medium", timeStyle: "short" })}</p>
       <p className="mt-1 text-sm text-ink-muted">{location} · {durationMinutes} min</p>
       <div className="mt-4 flex items-center justify-between gap-3 border-t border-brand-50 pt-3">
         <div><AvatarGroup people={attendees} /><p className="mt-1 text-xs text-ink-muted">{attendeeCount}/{capacity} going</p></div>

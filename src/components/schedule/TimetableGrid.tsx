@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export interface TimetableClassSession {
   kind?: "class";
@@ -91,20 +91,65 @@ export function TimetableGrid({
   onDelete?: (id: string) => void;
 }) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const timetableRef = useRef<HTMLElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     // Keep the full 24-hour grid available, but start the viewport at 06:00.
     if (scrollAreaRef.current) scrollAreaRef.current.scrollTop = 6 * HOUR_HEIGHT;
   }, []);
 
+  useEffect(() => {
+    const handleFullscreenChange = () => setIsFullscreen(document.fullscreenElement === timetableRef.current);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  async function toggleFullscreen() {
+    if (!timetableRef.current) return;
+    if (document.fullscreenElement) {
+      await document.exitFullscreen();
+    } else {
+      await timetableRef.current.requestFullscreen();
+    }
+  }
+
   return (
-    <section aria-label="Weekly timetable" className="glass-surface overflow-hidden rounded-3xl">
+    <section
+      ref={timetableRef}
+      aria-label="Weekly timetable"
+      data-fullscreen={isFullscreen}
+      className={`glass-surface overflow-hidden ${isFullscreen ? "h-screen rounded-none bg-background" : "rounded-3xl"}`}
+    >
+      <div className="flex h-12 items-center justify-between border-b border-brand-100 bg-white/80 px-4 backdrop-blur-xl">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-brand-500 shadow-[0_0_10px_rgba(91,79,224,0.6)]" />
+          <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-brand-800">Weekly timetable</h2>
+        </div>
+        <button
+          type="button"
+          onClick={() => void toggleFullscreen()}
+          className="group flex h-8 w-8 items-center justify-center rounded-lg border border-brand-100 bg-white text-brand-700 shadow-soft transition hover:-translate-y-0.5 hover:border-brand-300 hover:bg-brand-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+          aria-label={isFullscreen ? "Exit full screen timetable" : "Open timetable full screen"}
+          title={isFullscreen ? "Exit full screen" : "View full screen"}
+        >
+          {isFullscreen ? (
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 3v6H3M15 3v6h6M9 21v-6H3M15 21v-6h6" />
+            </svg>
+          ) : (
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current transition-transform group-hover:scale-110" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5" />
+            </svg>
+          )}
+        </button>
+      </div>
       {sessions.length === 0 && (
         <div className="border-b border-brand-100 bg-brand-50/70 px-4 py-3 text-center text-sm text-ink-muted">
           Your timetable is empty. Add a class or join a campus event to get started.
         </div>
       )}
-      <div ref={scrollAreaRef} className="min-h-[520px] max-h-[72vh] overflow-auto">
+      <div ref={scrollAreaRef} className={`${isFullscreen ? "h-[calc(100vh-3rem)] max-h-none" : "min-h-[520px] max-h-[72vh]"} overflow-auto`}>
         <div className="min-w-[920px]">
           <div className="sticky top-0 z-30 grid grid-cols-[64px_repeat(7,minmax(118px,1fr))] border-b border-brand-100 bg-white/95 backdrop-blur">
             <div className="border-r border-brand-100 px-2 py-3 text-center text-xs font-semibold uppercase tracking-wide text-ink-muted">Time</div>
