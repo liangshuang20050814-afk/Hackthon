@@ -1,42 +1,118 @@
-// [Owner: B] Manual course entry + .ics upload. This is the most
-// demo-critical flow — expect this page to get the most screen time in the
-// video, per ARCHITECTURE.md.
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/Button";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
+import { TimetableGrid, TimetableSession } from "@/components/schedule/TimetableGrid";
+
+type Notice = { kind: "success" | "error"; text: string } | null;
 
 export default function SchedulePage() {
-  const [file, setFile] = useState<File | null>(null);
+  const [sessions, setSessions] = useState<TimetableSession[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [notice, setNotice] = useState<Notice>(null);
+  const [editing, setEditing] = useState(false);
 
-  async function handleUpload() {
-    if (!file) return;
-    const formData = new FormData();
-    formData.append("file", file);
-    // TODO [B]: use the real logged-in student id.
-    formData.append("studentId", "demo-student-1");
-    await fetch("/api/schedule/upload", { method: "POST", body: formData });
+  const loadSchedule = useCallback(async () => {
+    try {
+      const response = await fetch("/api/schedule", { cache: "no-store" });
+      if (!response.ok) throw new Error("Could not load your timetable.");
+      setSessions(await response.json());
+    } catch (error) {
+      setNotice({
+        kind: "error",
+        text: error instanceof Error ? error.message : "Could not load your timetable.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadSchedule();
+  }, [loadSchedule]);
+
+  async function handleDelete(id: string) {
+    const session = sessions.find((item) => item.id === id);
+    const confirmed = window.confirm(
+      `Remove ${session?.course.code ?? "this class"} from your timetable? This cannot be undone.`,
+    );
+    if (!confirmed) return;
+
+    const response = await fetch(`/api/schedule?id=${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    if (response.ok) {
+      setSessions((current) => current.filter((session) => session.id !== id));
+      setNotice({ kind: "success", text: "Class removed from your timetable." });
+      return;
+    }
+
+    const result = await response.json();
+    setNotice({ kind: "error", text: result.error ?? "Could not remove this class." });
   }
 
   return (
-    <main className="flex flex-col gap-4 p-6">
-      <h1 className="text-xl font-bold">Your timetable</h1>
+    <main className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-6 sm:px-6 sm:py-8">
+      <div className="flex justify-start">
+        <button
+          type="button"
+          onClick={() => setEditing((current) => !current)}
+          aria-pressed={editing}
+          className={`rounded-full border px-4 py-2 text-sm font-semibold shadow-soft transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${
+            editing
+              ? "border-brand-600 bg-brand-600 text-white"
+              : "border-brand-200 bg-white text-brand-700 hover:border-brand-400 hover:bg-brand-50"
+          }`}
+        >
+          {editing ? "✓ Done editing" : "✎ Edit timetable"}
+        </button>
+      </div>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-brand-600">Your week</p>
+          <h1 className="mt-1 font-display text-3xl font-bold text-ink">Timetable</h1>
+          <p className="mt-1 text-sm text-ink-muted">See every class in its weekly time slot.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/schedule/add"
+            className="rounded-full border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-brand-700 shadow-soft transition hover:border-brand-400 hover:bg-brand-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+          >
+            + Add class
+          </Link>
+          <Link
+            href="/schedule/classmates"
+            className="rounded-full bg-gradient-to-r from-brand-500 to-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-glass transition hover:from-brand-600 hover:to-brand-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+          >
+            Find classmates
+          </Link>
+        </div>
+      </div>
 
-      {/* TODO [B]: manual course-entry form (course code autocomplete +
-          day/time picker) as an alternative to ICS upload. */}
+      {notice && (
+        <p
+          role={notice.kind === "error" ? "alert" : "status"}
+          className={`rounded-xl px-4 py-3 text-sm ${
+            notice.kind === "error" ? "bg-red-50 text-red-700" : "bg-green-50 text-green-800"
+          }`}
+        >
+          {notice.text}
+        </p>
+      )}
 
-      <label htmlFor="ics-file" className="text-sm font-medium">
-        Upload your .ics timetable export
-      </label>
-      <input
-        id="ics-file"
-        type="file"
-        accept=".ics"
-        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-      />
-      <Button onClick={handleUpload} disabled={!file}>
-        Upload
-      </Button>
+      {editing && (
+        <p className="rounded-xl border border-brand-100 bg-brand-50 px-4 py-3 text-sm text-brand-800">
+          Editing mode is on. Select a class to edit it, or use the × button to delete it.
+        </p>
+      )}
+
+      {loading ? (
+        <div className="glass-surface flex min-h-96 items-center justify-center rounded-3xl text-sm text-ink-muted">
+          Loading timetable…
+        </div>
+      ) : (
+        <TimetableGrid sessions={sessions} editing={editing} onDelete={handleDelete} />
+      )}
     </main>
   );
 }

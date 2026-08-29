@@ -4,6 +4,7 @@
 // this file's props.
 import { db } from "@/lib/db";
 import { Card } from "@/components/ui/Card";
+import { StartConversationButton } from "@/components/chat/StartConversationButton";
 import { notFound } from "next/navigation";
 
 function ageFrom(birthday: Date | null): number | null {
@@ -79,6 +80,8 @@ export default async function ProfilePage({ params }: { params: { studentId: str
         )}
 
         {student.bio && <p className="max-w-md text-sm text-ink-muted">{student.bio}</p>}
+
+        <StartConversationButton studentId={student.id} />
       </div>
 
       <Card>

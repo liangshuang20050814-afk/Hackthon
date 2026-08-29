@@ -19,7 +19,7 @@ import { Logo } from "./Logo";
 import { getCurrentStudentIdClient, initialsOf } from "@/lib/profileForm";
 
 const TABS = [
-  { href: "/schedule", label: "Schedule" }, // [B]
+  { href: "/schedule", label: "Timetable" }, // [B]
   { href: "/matches", label: "Matches" }, // [A]
   { href: "/chat", label: "Chat" }, // [C]
   { href: "/events", label: "Events" }, // [C]
