@@ -151,6 +151,17 @@ async function main() {
     data: eventFixtures.flatMap((event) => [...new Set(event.attendees)].map((studentId) => ({ eventId: event.id, studentId }))),
   });
 
+  await prisma.friendRequest.upsert({
+    where: { senderId_receiverId: { senderId: "demo-student-16", receiverId: "demo-student-1" } },
+    update: { status: "PENDING" },
+    create: { id: "demo-friend-request-chloe", senderId: "demo-student-16", receiverId: "demo-student-1" },
+  });
+  await prisma.friendRequest.upsert({
+    where: { senderId_receiverId: { senderId: "demo-student-13", receiverId: "demo-student-1" } },
+    update: { status: "PENDING" },
+    create: { id: "demo-friend-request-leo", senderId: "demo-student-13", receiverId: "demo-student-1" },
+  });
+
   const conversationWithMia = await prisma.conversation.upsert({
     where: { studentAId_studentBId: { studentAId: "demo-student-1", studentBId: "demo-student-2" } },
     update: {},

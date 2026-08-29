@@ -1133,6 +1133,17 @@ a:focus-visible .nav-tab-label::after {
   animation: events-board-enter 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+.friend-request-modal {
+  background-image:
+    radial-gradient(circle at 100% 0%, rgba(139, 123, 240, 0.14), transparent 36%),
+    radial-gradient(circle at 0% 100%, rgba(53, 198, 232, 0.09), transparent 34%);
+  animation: friend-request-modal-enter 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.friend-request-card {
+  animation: friend-request-card-enter 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 
 @keyframes match-enter {
   from { opacity: 0; transform: translateY(14px); }
@@ -1250,6 +1261,16 @@ a:focus-visible .nav-tab-label::after {
   to { transform: scaleX(1); }
 }
 
+@keyframes friend-request-modal-enter {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes friend-request-card-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 
 @media (max-width: 480px) {
   .match-constellation {
@@ -1321,6 +1342,12 @@ a:focus-visible .nav-tab-label::after {
   .event-detail-orb,
   .event-detail-progress,
   .event-attendee-card {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .friend-request-modal,
+  .friend-request-card {
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
   }

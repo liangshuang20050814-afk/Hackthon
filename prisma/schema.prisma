@@ -48,6 +48,9 @@ model Student {
   conversationsAsB Conversation[] @relation("ConversationStudentB")
   messagesSent     Message[]
 
+  friendRequestsSent     FriendRequest[] @relation("FriendRequestSender")
+  friendRequestsReceived FriendRequest[] @relation("FriendRequestReceiver")
+
   eventsAttending EventAttendee[]
   eventsCreated   Event[]         @relation("EventCreator")
 }
@@ -133,6 +136,20 @@ model Message {
   sentAt         DateTime     @default(now())
 
   @@index([conversationId, sentAt])
+}
+
+model FriendRequest {
+  id         String   @id @default(cuid())
+  senderId   String
+  sender     Student  @relation("FriendRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   Student  @relation("FriendRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  status     String   @default("PENDING")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([senderId, receiverId])
+  @@index([receiverId, status])
 }
 
 // --- Events ----------------------------------------------------------
