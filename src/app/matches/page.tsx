@@ -1,49 +1,134 @@
-// [Owner: A] AI-ranked match feed. Fetches from /api/matches and renders
-// each MatchReason explicitly — the score badge alone is not enough, the
-// reasons list under it is the point of the feature.
+// [Owner: A] General matching only. Timetable-based classmate matching lives
+// in /schedule/classmates so the two flows do not duplicate each other.
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
-import type { MatchResult } from "@/lib/types";
+import { DEMO_STUDENT_ID } from "@/lib/demo-user";
+import type { MatchResult, StudentSummary } from "@/lib/types";
 
-// TODO [A]: replace with real logged-in student id once login (D) exists.
-const CURRENT_STUDENT_ID = "demo-student-1";
+type MatchWithStudent = MatchResult & { student: StudentSummary };
 
 export default function MatchesPage() {
-  const [matches, setMatches] = useState<MatchResult[]>([]);
+  const [match, setMatch] = useState<MatchWithStudent | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`/api/matches?studentId=${CURRENT_STUDENT_ID}`)
-      .then((res) => res.json())
-      .then(setMatches);
+    let cancelled = false;
+
+    async function loadMatch() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`/api/matches?studentId=${DEMO_STUDENT_ID}`, { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error("Could not load match.");
+        }
+
+        const generalMatch = (await response.json()) as MatchWithStudent | null;
+        if (!cancelled) {
+          setMatch(generalMatch);
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(loadError instanceof Error ? loadError.message : "Could not load match.");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    void loadMatch();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
-    <main className="flex flex-col gap-3 p-6">
-      <h1 className="text-xl font-bold">Your matches</h1>
-      {matches.map((match) => (
-        <Link key={match.studentId} href={`/profile/${match.studentId}`}>
-          <Card className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold">{match.score}% match</span>
-            </div>
-            <ul className="text-sm text-gray-600">
-              {match.reasons.map((reason, i) => (
-                <li key={i}>{describeReason(reason)}</li>
-              ))}
-            </ul>
-            {match.aiSummary && <p className="text-sm italic">{match.aiSummary}</p>}
-          </Card>
-        </Link>
-      ))}
+    <main className="mx-auto flex max-w-4xl flex-col gap-5 px-4 py-6 sm:px-6 sm:py-8">
+      <div>
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-brand-600">Matching</p>
+        <h1 className="mt-1 font-display text-3xl font-bold text-ink">Find your best match</h1>
+      </div>
+
+      {loading && (
+        <Card className="flex min-h-48 items-center justify-center text-sm text-ink-muted">
+          Loading match...
+        </Card>
+      )}
+
+      {!loading && error && (
+        <Card>
+          <p role="alert" className="text-sm font-medium text-red-700">
+            {error}
+          </p>
+        </Card>
+      )}
+
+      {!loading && !error && (match ? <MatchCard match={match} /> : <EmptyState />)}
     </main>
   );
 }
 
+function MatchCard({ match }: { match: MatchWithStudent }) {
+  return (
+    <Link
+      href={`/profile/${match.studentId}`}
+      className="rounded-3xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+    >
+      <Card className="flex flex-col gap-4 p-6 transition-shadow hover:shadow-md">
+        <div className="flex items-center gap-3">
+          {match.student.avatarUrl ? (
+            <img src={match.student.avatarUrl} alt="" className="h-14 w-14 rounded-full bg-brand-50 object-cover" />
+          ) : (
+            <div
+              aria-hidden="true"
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 to-brand-700 font-display text-lg font-bold text-white"
+            >
+              {match.student.name.slice(0, 1).toUpperCase()}
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate font-display text-lg font-bold text-ink">{match.student.name}</h2>
+            <p className="truncate text-sm text-ink-muted">
+              {match.student.faculty} · Year {match.student.yearOfStudy}
+            </p>
+          </div>
+          <span className="rounded-full bg-brand-600 px-3 py-1.5 text-sm font-bold text-white">
+            {match.score}%
+          </span>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {match.reasons.slice(0, 5).map((reason, index) => (
+            <span
+              key={`${reason.type}-${index}`}
+              className="rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700"
+            >
+              {describeReason(reason)}
+            </span>
+          ))}
+        </div>
+
+        {match.aiSummary && <p className="text-sm leading-6 text-ink-muted">{match.aiSummary}</p>}
+      </Card>
+    </Link>
+  );
+}
+
+function EmptyState() {
+  return (
+    <Card>
+      <p className="text-sm font-medium text-ink-muted">No general match yet.</p>
+    </Card>
+  );
+}
+
 function describeReason(reason: MatchResult["reasons"][number]): string {
-  if (reason.type === "shared_course") return `Both take ${reason.courseCode}`;
-  if (reason.type === "shared_interest") return `Both into ${reason.interest}`;
-  return `Both free ${reason.day} ${reason.window}`;
+  if (reason.type === "shared_course") return reason.courseCode ? `Both take ${reason.courseCode}` : "Shared course";
+  if (reason.type === "shared_interest") return reason.interest ? `Both like ${reason.interest}` : "Shared interest";
+  return reason.day && reason.window ? `Both free ${reason.day} ${reason.window}` : "Shared free time";
 }
