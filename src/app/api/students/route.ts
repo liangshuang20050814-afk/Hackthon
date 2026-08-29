@@ -10,9 +10,11 @@
 // <img src={avatarUrl}> callsite already works with it unmodified.
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { NON_PLACEHOLDER_STUDENT_WHERE } from "@/lib/students/filters";
 
 export async function GET() {
   const students = await db.student.findMany({
+    where: NON_PLACEHOLDER_STUDENT_WHERE,
     include: { interests: true, enrollments: { include: { course: true } } },
   });
   return NextResponse.json(students);

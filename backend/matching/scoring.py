@@ -103,10 +103,10 @@ def summarize(student_a_name: str, student_b_name: str, reasons: list[dict]) -> 
 
 
 def _shared_courses(query_student: Any, candidate: Any) -> list[dict[str, str]]:
-    candidate_courses = {course.code: course for course in candidate.courses}
+    candidate_courses = {course.code.upper(): course for course in candidate.courses}
     shared = []
     for course in query_student.courses:
-        if course.code in candidate_courses:
+        if course.code.upper() in candidate_courses:
             shared.append({"code": course.code, "name": course.name})
     return shared
 

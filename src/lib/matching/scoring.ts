@@ -29,10 +29,11 @@ export function computeMatchScore(input: ScoringInput): ScoringOutput {
   const reasons: MatchReason[] = [];
   let score = 0;
 
-  // Shared courses
-  const bCourseCodes = new Set(input.studentBCourses.map((c) => c.code));
+  // Shared courses are matched by course code only. Course names are display
+  // metadata because imports may disagree on wording.
+  const bCourseCodes = new Set(input.studentBCourses.map((course) => course.code.toUpperCase()));
   for (const course of input.studentACourses) {
-    if (bCourseCodes.has(course.code)) {
+    if (bCourseCodes.has(course.code.toUpperCase())) {
       reasons.push({ type: "shared_course", courseCode: course.code, courseName: course.name });
       score += WEIGHTS.sharedCourse;
     }

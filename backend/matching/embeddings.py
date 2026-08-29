@@ -37,8 +37,7 @@ def profile_text(student: StudentLike) -> str:
     course_bits = []
     for course in student.courses:
         code = getattr(course, "code", "")
-        name = getattr(course, "name", "")
-        course_bits.append(f"{code} {name}".strip())
+        course_bits.append(code.strip().upper())
 
     return " ".join(
         [

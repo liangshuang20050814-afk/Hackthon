@@ -39,13 +39,18 @@ async function main() {
 
   const demoStudent = await prisma.student.upsert({
     where: { id: "demo-student-1" },
-    update: {},
-    create: {
-      id: "demo-student-1",
-      name: "Placeholder Student",
+    update: {
+      name: "Alex Chen",
       faculty: "Engineering",
       yearOfStudy: 2,
-      bio: "Seed data placeholder — replace with generated profile.",
+      bio: "Second-year software engineering student looking for reliable study partners and campus events.",
+    },
+    create: {
+      id: "demo-student-1",
+      name: "Alex Chen",
+      faculty: "Engineering",
+      yearOfStudy: 2,
+      bio: "Second-year software engineering student looking for reliable study partners and campus events.",
       enrollments: {
         create: {
           courseId: demoCourse.id,
@@ -182,7 +187,7 @@ async function main() {
     ],
   });
 
-  console.log(`Seeded placeholder student: ${demoStudent.name}`);
+  console.log(`Seeded demo student: ${demoStudent.name}`);
   console.log("Seeded demo chat conversations for C.");
   console.log("TODO [A]: expand this to 30 students + events + interests.");
 }
