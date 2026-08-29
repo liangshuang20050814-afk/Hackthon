@@ -58,7 +58,7 @@ export function TopNav() {
   const pathname = usePathname();
 
   // Pre-auth / onboarding screens: no feature tabs to jump to yet.
-  if (pathname === "/login" || pathname === "/onboarding") return null;
+  if (pathname === "/login" || pathname === "/signup" || pathname === "/onboarding") return null;
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/60 bg-white/70 shadow-soft backdrop-blur-xl">
@@ -66,7 +66,7 @@ export function TopNav() {
         <div className="flex min-w-0 items-center gap-3 sm:gap-6">
           <Link
             href="/matches"
-            aria-label="UniMatch home"
+            aria-label="UniSoul home"
             className="flex shrink-0 items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
           >
             <Logo size={32} />

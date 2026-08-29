@@ -1,4 +1,4 @@
-# UniMatch — SYNCS Hackathon Project
+# UniSoul — SYNCS Hackathon Project
 
 A student-matching app for USYD: find people in your classes, get AI-explained
 match suggestions, chat with them, and see campus events.

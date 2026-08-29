@@ -21,7 +21,7 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "UniMatch",
+  title: "UniSoul",
   description: "Find and connect with classmates at USYD",
 };
 
