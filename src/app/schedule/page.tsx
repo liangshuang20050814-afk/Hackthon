@@ -10,6 +10,7 @@ export default function SchedulePage() {
   const [sessions, setSessions] = useState<TimetableSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [notice, setNotice] = useState<Notice>(null);
+  const [editing, setEditing] = useState(false);
 
   const loadSchedule = useCallback(async () => {
     try {
@@ -31,6 +32,12 @@ export default function SchedulePage() {
   }, [loadSchedule]);
 
   async function handleDelete(id: string) {
+    const session = sessions.find((item) => item.id === id);
+    const confirmed = window.confirm(
+      `Remove ${session?.course.code ?? "this class"} from your timetable? This cannot be undone.`,
+    );
+    if (!confirmed) return;
+
     const response = await fetch(`/api/schedule?id=${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
@@ -46,6 +53,20 @@ export default function SchedulePage() {
 
   return (
     <main className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-6 sm:px-6 sm:py-8">
+      <div className="flex justify-start">
+        <button
+          type="button"
+          onClick={() => setEditing((current) => !current)}
+          aria-pressed={editing}
+          className={`rounded-full border px-4 py-2 text-sm font-semibold shadow-soft transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${
+            editing
+              ? "border-brand-600 bg-brand-600 text-white"
+              : "border-brand-200 bg-white text-brand-700 hover:border-brand-400 hover:bg-brand-50"
+          }`}
+        >
+          {editing ? "✓ Done editing" : "✎ Edit timetable"}
+        </button>
+      </div>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-brand-600">Your week</p>
@@ -79,12 +100,18 @@ export default function SchedulePage() {
         </p>
       )}
 
+      {editing && (
+        <p className="rounded-xl border border-brand-100 bg-brand-50 px-4 py-3 text-sm text-brand-800">
+          Editing mode is on. Select a class to edit it, or use the × button to delete it.
+        </p>
+      )}
+
       {loading ? (
         <div className="glass-surface flex min-h-96 items-center justify-center rounded-3xl text-sm text-ink-muted">
           Loading timetable…
         </div>
       ) : (
-        <TimetableGrid sessions={sessions} onDelete={handleDelete} />
+        <TimetableGrid sessions={sessions} editing={editing} onDelete={handleDelete} />
       )}
     </main>
   );
