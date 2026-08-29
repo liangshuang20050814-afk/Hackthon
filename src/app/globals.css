@@ -32,6 +32,397 @@ body {
   }
 }
 
+/* Lavender variant of the glass surface. Applied alongside .glass-surface,
+   overriding only its colour — the shared class stays untouched so
+   onboarding and the other cards are unaffected (same approach the
+   login/signup cards use for their more see-through look).
+
+   The tint is carried by the card's own gradient rather than by a coloured
+   wash behind it: the page around the card stays white on purpose, so
+   there is nothing for backdrop-blur to pick up and the lavender has to
+   live in the surface itself. */
+.glass-surface--lavender {
+  border-color: rgba(255, 255, 255, 0.55);
+  background-image: linear-gradient(
+    150deg,
+    rgba(233, 230, 253, 0.78) 0%,
+    rgba(255, 255, 255, 0.62) 52%,
+    rgba(209, 203, 251, 0.72) 100%
+  );
+  background-color: rgba(255, 255, 255, 0.34);
+  box-shadow: 0 18px 48px -20px rgba(91, 79, 224, 0.42);
+  backdrop-filter: blur(28px);
+}
+
+
+/* ---- Top nav: animated galaxy backdrop ------------------------------
+   Twilight-indigo ground + orbit arcs + a static star field, with the
+   only real motion coming from occasional meteors. All of it is
+   decorative: it sits behind the nav content (z-10) and is
+   pointer-events:none, so nothing here can swallow a click. Nav text is
+   white over this ground — the lightest gradient stop (#5a4fae) still
+   gives white/70 about 4.9:1, so AA holds; don't lighten these stops
+   further without re-checking that. Every animation is disabled under
+   prefers-reduced-motion at the bottom of this file. */
+.nav-galaxy {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 140% at 22% 0%, rgba(139, 123, 240, 0.26) 0%, transparent 62%),
+    radial-gradient(ellipse 60% 130% at 78% 100%, rgba(108, 93, 234, 0.2) 0%, transparent 62%),
+    linear-gradient(105deg, rgba(233, 230, 253, 0.72) 0%, rgba(214, 208, 252, 0.6) 48%, rgba(228, 223, 255, 0.7) 100%);
+}
+
+/* Orbit arcs. Very flat ellipses centred on the header, so what actually
+   shows inside its ~100px height is the long shallow sweep of each arc
+   rather than a full ring. */
+.nav-orbit {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border: 1px solid rgba(91, 79, 224, 0.2);
+  border-radius: 50%;
+}
+
+.nav-orbit-1 {
+  width: 1700px;
+  height: 150px;
+  transform: translate(-50%, -50%) rotate(-4deg);
+}
+
+.nav-orbit-2 {
+  width: 1180px;
+  height: 232px;
+  border-color: rgba(91, 79, 224, 0.14);
+  transform: translate(-50%, -46%) rotate(5deg);
+}
+
+.nav-orbit-3 {
+  width: 760px;
+  height: 104px;
+  border-color: rgba(74, 63, 196, 0.26);
+  transform: translate(-50%, -50%) rotate(-2deg);
+}
+
+/* Nebula clouds. `multiply`, not `screen`: the bar is a pale surface now,
+   and screen only ever lightens — over near-white it produces nothing at
+   all. Multiply lets the tint actually deepen the ground. */
+.nav-galaxy .nav-blob {
+  position: absolute;
+  top: 50%;
+  height: 260px;
+  margin-top: -130px;
+  border-radius: 50%;
+  filter: blur(48px);
+  mix-blend-mode: multiply;
+  opacity: 0.34;
+}
+
+.nav-galaxy .nav-blob-1 {
+  left: 2%;
+  width: 420px;
+  background: radial-gradient(circle, #8b7bf0, transparent 68%);
+  animation: nav-drift-1 26s ease-in-out infinite;
+}
+
+.nav-galaxy .nav-blob-2 {
+  left: 40%;
+  width: 380px;
+  background: radial-gradient(circle, #7ec4dd, transparent 68%);
+  animation: nav-drift-2 34s ease-in-out infinite;
+}
+
+.nav-galaxy .nav-blob-3 {
+  right: 4%;
+  width: 340px;
+  background: radial-gradient(circle, #d59ac0, transparent 68%);
+  animation: nav-drift-3 30s ease-in-out infinite;
+}
+
+/* The faint band of the Milky Way, drifting across on its own cycle. */
+.nav-milkyway {
+  position: absolute;
+  inset: -60% -15%;
+  background: linear-gradient(
+    104deg,
+    transparent 36%,
+    rgba(124, 110, 226, 0.1) 46%,
+    rgba(150, 132, 240, 0.18) 51%,
+    rgba(124, 110, 226, 0.09) 56%,
+    transparent 66%
+  );
+  filter: blur(14px);
+  mix-blend-mode: multiply;
+  animation: nav-milkyway 40s ease-in-out infinite;
+}
+
+/* Two tiled star layers. These no longer drift — the meteors below are
+   the only motion now — so they just breathe on slightly different
+   cycles to keep the field from looking printed on. */
+.nav-stars {
+  position: absolute;
+  inset: 0;
+  background-repeat: repeat;
+}
+
+/* Violet, not white: white stars are invisible against a pale bar. */
+.nav-stars-1 {
+  background-image:
+    radial-gradient(1.4px 1.4px at 18px 14px, rgba(74, 63, 196, 0.6), transparent 100%),
+    radial-gradient(1.1px 1.1px at 96px 46px, rgba(91, 79, 224, 0.45), transparent 100%),
+    radial-gradient(1px 1px at 158px 22px, rgba(58, 49, 156, 0.5), transparent 100%),
+    radial-gradient(1.6px 1.6px at 224px 62px, rgba(74, 63, 196, 0.55), transparent 100%),
+    radial-gradient(1px 1px at 270px 30px, rgba(91, 79, 224, 0.35), transparent 100%),
+    radial-gradient(1.2px 1.2px at 58px 74px, rgba(58, 49, 156, 0.42), transparent 100%);
+  background-size: 320px 96px;
+  animation: nav-twinkle-1 6s ease-in-out infinite;
+}
+
+.nav-stars-2 {
+  background-image:
+    radial-gradient(1px 1px at 40px 30px, rgba(91, 79, 224, 0.38), transparent 100%),
+    radial-gradient(0.8px 0.8px at 130px 66px, rgba(74, 63, 196, 0.3), transparent 100%),
+    radial-gradient(1.1px 1.1px at 196px 16px, rgba(58, 49, 156, 0.34), transparent 100%),
+    radial-gradient(0.9px 0.9px at 232px 50px, rgba(108, 93, 234, 0.3), transparent 100%);
+  background-size: 260px 80px;
+  animation: nav-twinkle-2 9s ease-in-out infinite;
+}
+
+/* Meteors. Each streak is visible for only the first third of its cycle
+   and idles off-screen for the rest, so with four of them on different
+   durations and delays you get an occasional shower rather than a
+   constant stream. translateX comes *after* rotate in the transform, so
+   each one travels along its own tilted axis. */
+.nav-meteor {
+  position: absolute;
+  height: 1.5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(91, 79, 224, 0) 0%, rgba(91, 79, 224, 0.4) 62%, #4a3fc4 100%);
+  opacity: 0;
+}
+
+/* The bright head, slightly overhanging the leading end of the tail. */
+.nav-meteor::after {
+  position: absolute;
+  right: -1px;
+  top: 50%;
+  width: 3px;
+  height: 3px;
+  margin-top: -1.5px;
+  border-radius: 50%;
+  background: #4a3fc4;
+  box-shadow: 0 0 8px 1px rgba(91, 79, 224, 0.5);
+  content: "";
+}
+
+/* The tilt has to stay shallow: the header is only ~105px tall, and
+   rotate(θ) over a ~1500px flight drops the streak by 1500·sin(θ). At 16°
+   that's 400px — the meteor falls out of the bar within the first fifth of
+   its travel and spends the rest clipped. At 4-5° the drop is ~110-130px,
+   so each one crosses the full width and only leaves at the very end. */
+.nav-meteor-1 {
+  top: -4%;
+  left: -14%;
+  width: 150px;
+  animation: nav-meteor-a 9s linear infinite;
+}
+
+.nav-meteor-2 {
+  top: 16%;
+  left: -10%;
+  width: 110px;
+  animation: nav-meteor-a 13s linear infinite 3.5s;
+}
+
+.nav-meteor-3 {
+  top: 2%;
+  left: -6%;
+  width: 130px;
+  animation: nav-meteor-b 17s linear infinite 7s;
+}
+
+.nav-meteor-4 {
+  top: 30%;
+  left: -12%;
+  width: 90px;
+  animation: nav-meteor-b 21s linear infinite 12s;
+}
+
+/* Bottom hairline: a colour gradient flowing sideways instead of a flat
+   1px border. */
+.nav-beam {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, #8b7bf0, #35c6e8, #ff6b76, #8b7bf0, transparent);
+  background-size: 200% 100%;
+  opacity: 0.55;
+  animation: nav-beam 9s linear infinite;
+}
+
+/* The orbit that runs through the profile photo. Anchored to the avatar
+   itself rather than drawn at a fixed x in the backdrop, because the
+   avatar's position shifts with the length of the user's name — pinning
+   the ellipse to the avatar is the only way "passes through the avatar"
+   stays true for every name. Sits behind the photo (z-index -1) so the
+   arc reads as passing under it. */
+.nav-avatar-orbit {
+  position: relative;
+  display: flex;
+}
+
+/* Geometry: `right:50%` puts the ellipse's right edge on the avatar's
+   centre, so the offsets below are measured from there. With a=700 and
+   b=100, shifting +100px right and 52px up leaves the avatar centre at
+   (600, 52) from the ellipse centre — and (600/700)² + (52/100)² = 1.00,
+   i.e. exactly on the rim. It's placed away from the ellipse's right tip
+   on purpose: out there the tangent is vertical and the arc would stub
+   straight out of the 100px-tall header, whereas at x=600 it crosses the
+   avatar at a shallow ~13°, sweeping the full width of the bar. */
+.nav-avatar-orbit::before {
+  position: absolute;
+  z-index: -1;
+  right: 50%;
+  top: 50%;
+  width: 1400px;
+  height: 200px;
+  border: 1px solid rgba(91, 79, 224, 0.28);
+  border-radius: 50%;
+  content: "";
+  transform: translate(100px, calc(-50% - 52px));
+}
+
+.nav-logo {
+  position: relative;
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* On the pale bar the dark logo mark reads on its own, so this is back to
+   a soft violet halo — no white disc needed to rescue legibility. */
+.nav-logo::before {
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(139, 123, 240, 0.4) 0%, rgba(174, 163, 247, 0.22) 48%, transparent 70%);
+  content: "";
+  inset: -18px;
+  animation: nav-logo-pulse 3.4s ease-in-out infinite;
+}
+
+.nav-logo:hover {
+  transform: scale(1.08);
+}
+
+/* Underline lives on a span wrapping the label, not on the link box —
+   the links are fixed-width slots (see TabLink), so a border on the box
+   would stretch far past the word. */
+/* text-indent cancels the trailing letter-space (and ::after trims the
+   same amount off the underline) — with tracking this wide, the gap after
+   the last letter is enough to make a centred label look shunted left. */
+.nav-tab-label {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 5px;
+  text-indent: 0.18em;
+  /* Set here rather than through a `font-tech` Tailwind utility: adding a
+     key to theme.fontFamily needs a config rebuild, and the running dev
+     server kept serving CSS with no such class — the --font-tech variable
+     resolved fine, but nothing ever used it, so the tabs silently fell
+     back to the body font. Referencing the variable directly can't go
+     stale that way. */
+  font-family: var(--font-tech), "Space Grotesk", system-ui, sans-serif;
+}
+
+.nav-tab-label::after {
+  position: absolute;
+  right: 0.18em;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #5b4fe0, #35c6e8, #ff6b76, #5b4fe0);
+  background-size: 300% 100%;
+  content: "";
+  transform: scaleX(0);
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+a:hover .nav-tab-label::after,
+a:focus-visible .nav-tab-label::after {
+  transform: scaleX(1);
+}
+
+.nav-tab-label--active::after {
+  transform: scaleX(1);
+  animation: nav-underline-flow 4s linear infinite;
+}
+
+@keyframes nav-drift-1 {
+  0%, 100% { transform: translateX(0) scale(1); }
+  50% { transform: translateX(90px) scale(1.15); }
+}
+
+@keyframes nav-drift-2 {
+  0%, 100% { transform: translateX(0) scale(1.1); }
+  50% { transform: translateX(-120px) scale(0.9); }
+}
+
+@keyframes nav-drift-3 {
+  0%, 100% { transform: translateX(0) scale(0.95); }
+  50% { transform: translateX(-70px) scale(1.2); }
+}
+
+/* Visible for the first ~30% of the cycle, parked off-screen for the
+   rest — that idle tail is what spaces the meteors out. */
+@keyframes nav-meteor-a {
+  0% { opacity: 0; transform: rotate(5deg) translateX(-220px); }
+  4% { opacity: 0.9; }
+  24% { opacity: 0.9; }
+  30% { opacity: 0; transform: rotate(5deg) translateX(1500px); }
+  100% { opacity: 0; transform: rotate(5deg) translateX(1500px); }
+}
+
+@keyframes nav-meteor-b {
+  0% { opacity: 0; transform: rotate(4deg) translateX(-200px); }
+  5% { opacity: 0.75; }
+  22% { opacity: 0.75; }
+  28% { opacity: 0; transform: rotate(4deg) translateX(1350px); }
+  100% { opacity: 0; transform: rotate(4deg) translateX(1350px); }
+}
+
+@keyframes nav-twinkle-1 {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 0.55; }
+}
+
+@keyframes nav-twinkle-2 {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.85; }
+}
+
+@keyframes nav-milkyway {
+  0%, 100% { transform: translateX(-4%) rotate(0deg); }
+  50% { transform: translateX(4%) rotate(1.5deg); }
+}
+
+@keyframes nav-beam {
+  to { background-position: -200% 0; }
+}
+
+@keyframes nav-logo-pulse {
+  0%, 100% { opacity: 0.8; transform: scale(0.96); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+@keyframes nav-underline-flow {
+  to { background-position: 300% 0; }
+}
+
 .match-grid {
   background-image:
     linear-gradient(rgba(91, 79, 224, 0.045) 1px, transparent 1px),
@@ -283,7 +674,14 @@ body {
   .match-core,
   .match-avatar-ring,
   .match-search-dot,
-  .match-feedback-icon {
+  .match-feedback-icon,
+  .nav-galaxy .nav-blob,
+  .nav-milkyway,
+  .nav-stars,
+  .nav-beam,
+  .nav-meteor,
+  .nav-logo::before,
+  .nav-tab-label--active::after {
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
   }

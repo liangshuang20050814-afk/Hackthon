@@ -19,8 +19,17 @@ export function studentInitials(name: string) {
   return `${parts[0][0]}${parts[1]?.[0] ?? ""}`.toUpperCase();
 }
 
-export function StudentAvatar({ name, size = "md", className = "" }: StudentAvatarProps) {
+export function StudentAvatar({ name, avatarUrl, size = "md", className = "" }: StudentAvatarProps) {
   const classes = `${SIZE_CLASSES[size]} shrink-0 rounded-full object-cover shadow-soft ${className}`;
+
+  // avatarUrl was declared in the props type but never read here, so every
+  // avatar rendered through this component (TopNav, AvatarGroup, the
+  // profile page) always showed a generated purple placeholder — even for
+  // students with a real uploaded photo or a differently-colored generated
+  // avatar already saved. Render the real image when there is one.
+  if (avatarUrl) {
+    return <img src={avatarUrl} alt={name} className={classes} />;
+  }
 
   return (
     <div

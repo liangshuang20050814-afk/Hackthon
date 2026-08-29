@@ -79,7 +79,6 @@ export const INTERESTS = [
   "Volunteering",
   "Climbing",
   "Dance",
-  "Fashion",
 ];
 
 export const MIN_INTERESTS = 3;
@@ -121,6 +120,24 @@ export function getCurrentStudentIdClient(): string {
 export function clearCurrentStudentIdCookie() {
   if (typeof document === "undefined") return;
   document.cookie = `${CURRENT_STUDENT_COOKIE}=; path=/; max-age=0`;
+}
+
+// Broadcast a profile save to anything already on screen showing "the
+// current user". TopNav's avatar+name button loads once on mount and the
+// edit form deliberately stays put after saving (no navigation), so
+// without this the header keeps rendering the pre-save name/avatar until a
+// full page reload. The updated student comes along in `detail` so
+// listeners don't have to re-fetch what the PATCH already returned.
+export const PROFILE_UPDATED_EVENT = "unisoul:profile-updated";
+
+export interface ProfileUpdatedDetail {
+  name: string;
+  avatarUrl: string | null;
+}
+
+export function emitProfileUpdated(detail: ProfileUpdatedDetail) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent<ProfileUpdatedDetail>(PROFILE_UPDATED_EVENT, { detail }));
 }
 
 export function initialsOf(name: string) {

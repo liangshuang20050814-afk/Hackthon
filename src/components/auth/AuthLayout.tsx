@@ -20,10 +20,18 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
               UniSoul
             </span>
           </div>
-          <h1 className="font-display text-3xl font-bold leading-[1.15] tracking-tight text-ink sm:text-4xl">
-            UniSoul highlight the shared block
-          </h1>
-          <p className="text-lg text-ink-muted">Find it, highlight it.</p>
+          <div className="flex flex-col gap-3">
+            <h1 className="font-display text-2xl font-bold leading-snug tracking-tight text-ink sm:text-3xl">
+              At university, everyone can feel like an island.
+            </h1>
+            <p className="text-base text-ink-muted sm:text-lg">
+              We share spaces with countless people every day, yet rarely truly reach one another.
+            </p>
+            <p className="text-base text-ink-muted sm:text-lg">
+              UniSoul helps you find the people you genuinely connect with — and builds the first bridge between
+              you.
+            </p>
+          </div>
         </div>
 
         {children}

@@ -39,6 +39,8 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
         display: ["var(--font-display)", "system-ui", "sans-serif"],
+        // No `tech` key: the nav tab font is applied in globals.css off
+        // --font-tech directly (see .nav-tab-label for why).
       },
       boxShadow: {
         soft: "0 2px 16px rgba(36, 34, 53, 0.07)",

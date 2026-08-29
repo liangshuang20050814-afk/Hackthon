@@ -15,6 +15,7 @@ import {
   MIN_INTERESTS,
   YEARS,
   clearCurrentStudentIdCookie,
+  emitProfileUpdated,
   fileToSquareDataUrl,
   generateInitialsAvatar,
   initialsOf,
@@ -35,7 +36,7 @@ interface EditableStudent {
 }
 
 const inputClass =
-  "rounded-xl border border-brand-100 bg-white px-3.5 py-2.5 text-ink placeholder:text-ink-muted/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600";
+  "rounded-xl border border-brand-100 bg-white px-3.5 py-2.5 text-ink placeholder:text-ink-muted/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600";
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return <h2 className="text-xs font-semibold uppercase tracking-wider text-brand-700">{children}</h2>;
@@ -63,6 +64,7 @@ export function EditProfileForm({ student }: { student: EditableStudent }) {
   const [interests, setInterests] = useState<string[]>(student.interests);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
 
   const swatch = AVATAR_SWATCHES.find((s) => s.id === avatarColor)!;
 
@@ -98,6 +100,7 @@ export function EditProfileForm({ student }: { student: EditableStudent }) {
     if (!formValid || submitting) return;
     setSubmitting(true);
     setError(null);
+    setSaved(false);
     try {
       const avatarUrl = photoDataUrl || generateInitialsAvatar(name, swatch.hexFrom, swatch.hexTo);
       const res = await fetch(`/api/students/${student.id}`, {
@@ -106,28 +109,53 @@ export function EditProfileForm({ student }: { student: EditableStudent }) {
         body: JSON.stringify({ name, faculty, yearOfStudy, bio, interests, avatarUrl, major, birthday, gender, mbti }),
       });
       if (!res.ok) throw new Error("Failed to save profile");
-      router.push(`/profile/${student.id}`);
+      const updated = await res.json();
+
+      // Keep the preview on the exact string that was stored, so a save
+      // that ended up generating an initials avatar (no photo uploaded)
+      // shows that avatar here too rather than an empty circle.
+      setPhotoDataUrl(updated.avatarUrl ?? null);
+
+      // Push the new name/avatar into TopNav's profile button — it loads
+      // once on mount and we deliberately don't navigate away, so it can't
+      // notice the change on its own.
+      emitProfileUpdated({ name: updated.name, avatarUrl: updated.avatarUrl ?? null });
+
+      // This page is a server component reading straight from the database,
+      // and its RSC payload sits in the client router cache. Without a
+      // refresh, navigating away and back re-renders the *pre-save* values
+      // and the edit looks like it never persisted.
+      router.refresh();
+
+      // Stay on this page — just confirm the save instead of navigating
+      // away, so the update actually reflects here rather than bouncing to
+      // the read-only profile view.
+      setSaved(true);
     } catch {
       setError("Something went wrong saving your profile — please try again.");
+    } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="glass-surface flex flex-col gap-10 rounded-[2rem] px-8 py-10 sm:px-10">
-      <div>
-        <h1 className="font-display text-2xl font-bold text-ink">Edit profile</h1>
-        <p className="mt-1 text-sm text-ink-muted">Update what classmates see about you.</p>
-      </div>
+    <form
+      onSubmit={handleSubmit}
+      className="glass-surface glass-surface--lavender flex flex-col gap-10 rounded-[2rem] px-8 py-10 sm:px-10"
+    >
+      <h1 className="font-display text-2xl font-bold text-ink">Edit profile</h1>
 
-      {/* Landscape layout: a fixed-width left column (square avatar panel +
-          bio underneath it) and a 3-column field grid on the right — keeps
-          the page a wide card instead of one long vertical scroll.
-          items-start so the left column doesn't stretch to match the
-          taller fields column. Stacks back to a single column below md. */}
+      {/* Landscape layout: a fixed-width left column (avatar + bio) and a
+          3-column field grid on the right — keeps the page a wide card
+          instead of one long vertical scroll. items-start so the left
+          column doesn't stretch to match the taller fields column, and the
+          avatar block sits at its natural (top-aligned) height instead of
+          being centered in a fixed square, so it lines up with "Basic
+          info" on the right instead of floating lower. Stacks back to a
+          single column below md. */}
       <div className="grid gap-8 md:grid-cols-[260px_1fr] md:items-start">
         <div className="flex flex-col gap-6">
-          <div className="flex aspect-square flex-col items-center justify-center gap-3 rounded-2xl border border-brand-100 bg-brand-50/50 p-6">
+          <div className="flex flex-col items-center gap-3">
             {photoDataUrl ? (
               <img src={photoDataUrl} alt="Your profile photo" className="h-28 w-28 rounded-full object-cover shadow-soft" />
             ) : (
@@ -204,7 +232,7 @@ export function EditProfileForm({ student }: { student: EditableStudent }) {
           </div>
         </div>
 
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
           <SectionHeading>Basic info</SectionHeading>
 
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -220,6 +248,15 @@ export function EditProfileForm({ student }: { student: EditableStudent }) {
                 Faculty
               </label>
               <select id="faculty" value={faculty} onChange={(e) => setFaculty(e.target.value)} className={inputClass}>
+                {/* Same placeholder as onboarding. Sign-up creates the
+                    account with faculty: "", and without an option matching
+                    that value the browser renders the first real faculty as
+                    if it were selected — while `faculty !== ""` keeps Save
+                    disabled, so the form looks complete but silently refuses
+                    to submit. */}
+                <option value="" disabled>
+                  Select your faculty
+                </option>
                 {FACULTIES.map((f) => (
                   <option key={f} value={f}>
                     {f}
@@ -251,10 +288,10 @@ export function EditProfileForm({ student }: { student: EditableStudent }) {
             </div>
           </div>
 
-          <div className="border-t border-brand-100 pt-6">
+          <div className="border-t border-brand-100 pt-4">
             <SectionHeading>More about you</SectionHeading>
 
-            <div className="mt-4 grid gap-5 sm:grid-cols-2">
+            <div className="mt-3 grid gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-1.5">
                 <span className="text-sm font-medium text-ink">Birthday</span>
                 <BirthdayInput value={birthday} onChange={setBirthday} />
@@ -295,11 +332,12 @@ export function EditProfileForm({ student }: { student: EditableStudent }) {
           ))}
         </div>
         <p className="text-xs text-ink-muted">
-          {interests.length}/{MIN_INTERESTS} minimum selected
+          {Math.min(interests.length, MIN_INTERESTS)}/{MIN_INTERESTS} minimum selected
         </p>
       </div>
 
       {error && <p className="text-sm text-rose-600">{error}</p>}
+      {saved && !error && <p className="text-sm font-medium text-emerald-600">Profile updated.</p>}
 
       <div className="flex items-center justify-between gap-3 border-t border-brand-100 pt-6">
         <button
