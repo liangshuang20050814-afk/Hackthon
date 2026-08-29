@@ -26,6 +26,8 @@ export default function MatchesPage() {
   const [decision, setDecision] = useState<Decision | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [requestError, setRequestError] = useState<string | null>(null);
+  const [requesting, setRequesting] = useState(false);
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -65,8 +67,27 @@ export default function MatchesPage() {
     timerRef.current = window.setTimeout(() => setPhase("reveal"), 1450);
   }
 
-  function makeDecision(nextDecision: Decision) {
+  async function makeDecision(nextDecision: Decision) {
     if (!currentMatch || phase !== "reveal") return;
+
+    if (nextDecision === "request") {
+      setRequesting(true);
+      setRequestError(null);
+      try {
+        const response = await fetch("/api/friend-requests", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "create", receiverId: currentMatch.studentId }),
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error ?? "Could not send this friend request.");
+      } catch (requestFailure) {
+        setRequestError(requestFailure instanceof Error ? requestFailure.message : "Could not send this friend request.");
+        setRequesting(false);
+        return;
+      }
+      setRequesting(false);
+    }
 
     const storedKey = nextDecision === "request" ? "unimatch.requests" : "unimatch.passes";
     const existing = JSON.parse(window.localStorage.getItem(storedKey) ?? "[]") as string[];
@@ -77,6 +98,7 @@ export default function MatchesPage() {
     timerRef.current = window.setTimeout(() => {
       setCurrentIndex((index) => (matches.length > 1 ? (index + 1) % matches.length : index));
       setDecision(null);
+      setRequestError(null);
       if (nextDecision === "pass") {
         setPhase("searching");
         timerRef.current = window.setTimeout(() => setPhase("reveal"), 1450);
@@ -112,8 +134,10 @@ export default function MatchesPage() {
           <CandidateReveal
             key={currentMatch.studentId}
             match={currentMatch}
-            onRequest={() => makeDecision("request")}
-            onPass={() => makeDecision("pass")}
+            onRequest={() => void makeDecision("request")}
+            onPass={() => void makeDecision("pass")}
+            requestError={requestError}
+            requesting={requesting}
           />
         )}
         {!loading && !error && currentMatch && phase === "feedback" && (
@@ -179,10 +203,14 @@ function CandidateReveal({
   match,
   onRequest,
   onPass,
+  requestError,
+  requesting,
 }: {
   match: MatchWithStudent;
   onRequest: () => void;
   onPass: () => void;
+  requestError: string | null;
+  requesting: boolean;
 }) {
   const profile = match.student;
 
@@ -235,9 +263,10 @@ function CandidateReveal({
       </div>
 
       <div className="mt-8 flex flex-col-reverse justify-center gap-3 sm:flex-row">
-        <Button variant="secondary" onClick={onPass} className="min-w-40">Not interested</Button>
-        <Button onClick={onRequest} className="min-w-44">Send friend request</Button>
+        <Button variant="secondary" onClick={onPass} disabled={requesting} className="min-w-40">Not interested</Button>
+        <Button onClick={onRequest} disabled={requesting} className="min-w-44">{requesting ? "Sending…" : "Send friend request"}</Button>
       </div>
+      {requestError && <p role="alert" className="mx-auto mt-3 max-w-md rounded-xl bg-red-50 px-3 py-2 text-center text-xs font-medium text-red-700">{requestError}</p>}
       <Link href={`/profile/${profile.id}`} className="mx-auto mt-5 block w-fit text-sm font-semibold text-brand-700 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">
         View full profile
       </Link>

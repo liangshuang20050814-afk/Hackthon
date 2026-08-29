@@ -4,6 +4,14 @@ import { Poppins, Plus_Jakarta_Sans, Space_Grotesk, Playfair_Display } from "nex
 import { TopNav } from "@/components/ui/TopNav";
 import "./globals.css";
 
+// Merge note: "Fix dependency issue" removed these four next/font loaders
+// and fell back to system stacks. They're restored here because they carry
+// the whole visual identity (nav labels, headings, the auth slogan), but
+// that commit's concern is kept: globals.css now declares a system-font
+// fallback for every one of these variables, so if next/font can't reach
+// Google Fonts at build time the app still renders with sane type instead
+// of breaking. Don't drop those fallbacks.
+
 // Bold rounded-geometric display font for headings, paired with a plainer
 // sans for UI text/body — deliberately not the default-everywhere Inter,
 // which is what makes most AI-tool UIs look the same.
@@ -24,6 +32,12 @@ const jakarta = Plus_Jakarta_Sans({
 // rather than as interface. Space Grotesk keeps the geometric/technical
 // feel with proper text proportions, and stays crisp set in caps with wide
 // tracking — which is where the "tech" character actually comes from here.
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-tech",
+  display: "swap",
+});
 // The auth-screen slogan. Deliberately not another geometric sans —
 // Poppins is a UI face and reads as a heading however large it's set,
 // which is why the tagline never felt like a tagline. Playfair's italic
@@ -35,12 +49,6 @@ const playfair = Playfair_Display({
   weight: ["500", "600"],
   style: ["normal", "italic"],
   variable: "--font-slogan",
-  display: "swap",
-});
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-tech",
   display: "swap",
 });
 

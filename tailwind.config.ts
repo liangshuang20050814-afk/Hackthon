@@ -37,8 +37,10 @@ const config: Config = {
         surface: "#FFFFFF",
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
-        display: ["var(--font-display)", "system-ui", "sans-serif"],
+        // Fallback inside var() so these still resolve if next/font can't
+        // reach Google Fonts at build time — see the note in globals.css.
+        sans: ["var(--font-sans, ui-sans-serif)", "system-ui", "sans-serif"],
+        display: ["var(--font-display, ui-sans-serif)", "system-ui", "sans-serif"],
         // No `tech` key: the nav tab font is applied in globals.css off
         // --font-tech directly (see .nav-tab-label for why).
       },
