@@ -42,6 +42,7 @@ model Student {
   messagesSent     Message[]
 
   eventsAttending EventAttendee[]
+  eventsCreated   Event[]         @relation("EventCreator")
 }
 
 model Interest {
@@ -127,18 +128,25 @@ model Message {
   @@index([conversationId, sentAt])
 }
 
-// --- Events [Owner: C] -----------------------------------------------
-// No creation flow by design: seed.ts pre-populates events, the UI only
-// lists/details/joins them.
+// --- Events ----------------------------------------------------------
 
 model Event {
-  id          String          @id @default(cuid())
-  title       String
-  description String
-  location    String
-  startsAt    DateTime
-  imageUrl    String?
-  attendees   EventAttendee[]
+  id              String          @id @default(cuid())
+  title           String
+  description     String
+  location        String
+  eventType       String          @default("Other")
+  startsAt        DateTime
+  durationMinutes Int             @default(60)
+  capacity        Int             @default(10)
+  imageUrl        String?
+  creatorId       String?
+  creator         Student?        @relation("EventCreator", fields: [creatorId], references: [id], onDelete: SetNull)
+  createdAt       DateTime        @default(now())
+  attendees       EventAttendee[]
+
+  @@index([startsAt])
+  @@index([creatorId])
 }
 
 model EventAttendee {

@@ -5,14 +5,14 @@ import { FormEvent, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import type { TimetableSession } from "@/components/schedule/TimetableGrid";
+import type { TimetableClassSession } from "@/components/schedule/TimetableGrid";
 
 const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export default function EditClassPage() {
   const { enrollmentId } = useParams<{ enrollmentId: string }>();
   const router = useRouter();
-  const [session, setSession] = useState<TimetableSession | null>(null);
+  const [session, setSession] = useState<TimetableClassSession | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
