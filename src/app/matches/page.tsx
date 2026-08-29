@@ -92,13 +92,7 @@ export default function MatchesPage() {
         <div aria-hidden="true" className="match-grid absolute inset-0 -z-20" />
         <div aria-hidden="true" className="match-stage-wash absolute inset-0 -z-10" />
 
-        <header className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-600">UniSoul Matching</p>
-            <p className="mt-1 text-sm text-ink-muted">
-              {matches.length > 0 ? `${currentIndex + 1} of ${matches.length} candidates` : "Preparing candidates"}
-            </p>
-          </div>
+        <header className="flex items-center justify-end">
           <div className="flex items-center gap-2" aria-label="Matching dimensions">
             {BLOCKS.map((block) => (
               <span key={block.label} className={`h-2.5 w-2.5 rounded-[3px] ${block.className}`} />
@@ -134,8 +128,7 @@ function IntroState({ onExplore }: { onExplore: () => void }) {
   return (
     <section className="match-enter flex min-h-[540px] flex-col items-center justify-center text-center sm:min-h-[570px]">
       <BlockConstellation />
-      <p className="mt-8 text-sm font-semibold text-brand-700">Every block of you could resonate with someone else</p>
-      <h1 className="mt-3 max-w-2xl font-display text-3xl font-bold leading-tight text-ink sm:text-5xl">
+      <h1 className="mt-8 max-w-2xl font-display text-3xl font-bold leading-tight text-ink sm:text-5xl">
         Want to find your best match?
       </h1>
       <p className="mt-4 max-w-lg text-sm leading-6 text-ink-muted sm:text-base">

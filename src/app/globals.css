@@ -56,14 +56,51 @@ body {
 
 .match-constellation {
   position: relative;
-  width: 264px;
-  height: 264px;
+  width: 320px;
+  height: 320px;
   flex: 0 0 auto;
 }
 
 .match-constellation--compact {
   width: 224px;
   height: 224px;
+}
+
+.match-constellation:not(.match-constellation--compact) .match-block {
+  width: 94px;
+  height: 58px;
+  font-size: 14px;
+}
+
+.match-constellation:not(.match-constellation--compact) .match-block-1 {
+  left: 30px;
+  top: 63px;
+}
+
+.match-constellation:not(.match-constellation--compact) .match-block-2 {
+  right: 27px;
+  top: 69px;
+}
+
+.match-constellation:not(.match-constellation--compact) .match-block-3 {
+  bottom: 51px;
+  left: 36px;
+}
+
+.match-constellation:not(.match-constellation--compact) .match-block-4 {
+  right: 29px;
+  bottom: 56px;
+}
+
+.match-constellation:not(.match-constellation--compact) .match-core {
+  width: 80px;
+  height: 80px;
+  border-radius: 21px;
+}
+
+.match-constellation:not(.match-constellation--compact) .match-core span {
+  width: 24px;
+  height: 24px;
 }
 
 .match-orbit {
