@@ -28,9 +28,9 @@ Hackthon/
 │   │   │                                        B links to it from classmate list
 │   │   │
 │   │   ├── schedule/page.tsx         # [B] Manual course entry + ICS upload
-│   │   ├── schedule/classmates/page.tsx   # [B] Students sharing a course
+│   │   ├── schedule/classmates/page.tsx   # [B] Students sharing a course + match %
 │   │   │
-│   │   ├── matches/page.tsx          # [A] AI-ranked match feed with explanations
+│   │   ├── matches/page.tsx          # [A] One best general match with explanations
 │   │   │
 │   │   ├── chat/page.tsx             # [C] Conversation list
 │   │   ├── chat/[conversationId]/page.tsx # [C] Thread view, polls for new messages
@@ -40,7 +40,7 @@ Hackthon/
 │   │   │
 │   │   └── api/
 │   │       ├── students/route.ts     # [A] GET students (with courses + interests)
-│   │       ├── matches/route.ts      # [A] GET /api/matches?studentId= → scored list
+│   │       ├── matches/route.ts      # [A] GET /api/matches?studentId=
 │   │       ├── schedule/upload/route.ts # [B] POST .ics file → parsed course list
 │   │       ├── messages/route.ts     # [C] GET/POST messages for a conversation
 │   │       └── events/route.ts       # [C] GET events, POST attendance
@@ -60,8 +60,7 @@ Hackthon/
 │       ├── db.ts                    # [A] Prisma client singleton, imported everywhere
 │       ├── types.ts                 # [A] Shared TypeScript types (Student, MatchResult, ...)
 │       ├── matching/
-│       │   ├── scoring.ts           # [A] Explainable numeric scoring (see contract below)
-│       │   └── claude.ts            # [A] Wraps Claude API to turn a score into 1-2 sentences
+│       │   └── scoring.ts           # [A] Explainable numeric scoring (see contract below)
 │       ├── ics/parser.ts            # [B] .ics text -> CourseSession[]
 │       └── polling/useChatPolling.ts # [C] Client hook: setInterval fetch of new messages
 │
@@ -108,7 +107,7 @@ interface MatchResult {
   studentId: string;
   score: number;              // 0-100, for the badge/progress ring
   reasons: MatchReason[];     // ordered, most significant first
-  aiSummary: string;          // 1-2 sentence Claude-generated explanation
+  aiSummary: string;          // 1-2 sentence explanation generated without an LLM API
 }
 
 type MatchReason =

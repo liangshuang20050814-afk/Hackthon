@@ -7,7 +7,7 @@ match suggestions, chat with them, and see campus events.
 
 | Owner | Area | Folder(s) |
 |-------|------|-----------|
-| **A** | Data layer + AI matching engine | `prisma/`, `src/lib/matching/`, `src/lib/db.ts`, `src/app/api/students`, `src/app/api/matches`, `src/app/matches` |
+| **A** | Data layer + AI matching engine | `prisma/`, `backend/`, `src/lib/matching/`, `src/lib/db.ts`, `src/app/api/students`, `src/app/api/matches`, `src/app/matches` |
 | **B** | Timetable: manual input, ICS parsing, classmates list | `src/lib/ics/`, `src/app/schedule/`, `src/components/schedule/`, `src/app/api/schedule` |
 | **C** | Chat + Events | `src/lib/polling/`, `src/app/chat/`, `src/app/events/`, `src/components/chat/`, `src/components/events/`, `src/app/api/messages`, `src/app/api/events` |
 | **D** | Design system, login/onboarding/profile pages, accessibility, video & submission | `src/components/ui/`, `src/app/profile/`, `src/app/login/`, `src/app/onboarding/`, `src/app/globals.css`, `docs/` |
@@ -46,6 +46,7 @@ npm run dev
   frontend/backend split to coordinate during a hackathon.
 - **Prisma + SQLite** — zero-config local DB, fast to seed and reset.
 - **Tailwind CSS** — utility classes on top of D's shared design tokens.
-- **Anthropic Claude API** — generates the human-readable "why you matched"
-  explanation on top of A's numeric scoring.
+- **Python matching service** — optional SentenceTransformer-based semantic
+  matching for the general match flow. The app still has a local explainable
+  TypeScript fallback when the Python service is not running.
 - **Polling (no WebSockets)** — simplest thing that works for a chat demo.

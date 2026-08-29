@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "matching:dev": "cd backend && .venv/bin/uvicorn matching_service:app --reload --port 8000",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
