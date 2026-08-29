@@ -10,7 +10,7 @@ import { usePathname } from "next/navigation";
 import { Logo } from "./Logo";
 
 const TABS = [
-  { href: "/schedule", label: "Schedule" }, // [B]
+  { href: "/schedule", label: "Timetable" }, // [B]
   { href: "/matches", label: "Matches" }, // [A]
   { href: "/chat", label: "Chat" }, // [C]
   { href: "/events", label: "Events" }, // [C]
