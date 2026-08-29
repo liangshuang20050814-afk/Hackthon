@@ -52,6 +52,8 @@ export default function EventsPage() {
         <div className="events-stage-noise pointer-events-none absolute inset-0 -z-10" />
         <div className="events-stage-orb events-stage-orb-one pointer-events-none absolute -z-10" />
         <div className="events-stage-orb events-stage-orb-two pointer-events-none absolute -z-10" />
+        <div className="events-board-orbit events-board-orbit-outer pointer-events-none absolute -z-10" aria-hidden="true" />
+        <div className="events-board-orbit events-board-orbit-inner pointer-events-none absolute -z-10" aria-hidden="true" />
 
         <div className="relative flex flex-wrap items-center justify-between gap-3">
           <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-white/75">
