@@ -41,7 +41,6 @@ export default function ChatListPage() {
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-5 px-6 py-8">
       <div>
         <h1 className="font-display text-2xl font-bold text-ink">Messages</h1>
-        <p className="text-sm text-ink-muted">Chats opened from your matches and classmates.</p>
       </div>
 
       {isLoading && <ConversationSkeleton />}
