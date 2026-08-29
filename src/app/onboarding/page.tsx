@@ -9,7 +9,7 @@
 // only — not part of the MatchReason contract. Free time isn't asked
 // here — it's derived from the timetable entered on /schedule afterwards,
 // not something to hand-collect during onboarding.
-import { useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { Suspense, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Chip } from "@/components/ui/Chip";
@@ -32,6 +32,14 @@ import {
 const TOTAL_STEPS = 4;
 
 export default function OnboardingPage() {
+  return (
+    <Suspense fallback={<main className="mx-auto flex min-h-screen max-w-md items-center justify-center px-6 py-12 text-sm text-ink-muted">Loading...</main>}>
+      <OnboardingForm />
+    </Suspense>
+  );
+}
+
+function OnboardingForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);

@@ -1,11 +1,11 @@
 // [Owner: D] POST /api/auth/login -> verifies email + password against the
-// stored bcrypt hash. Deliberately returns the same generic error whether
+// stored password hash. Deliberately returns the same generic error whether
 // the email doesn't exist or the password is wrong — don't let the error
 // message confirm which emails have accounts. Seed students have no
 // passwordHash at all, so they can never be logged into (expected: they
 // represent other people, not accounts you own).
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
+import { verifyPassword } from "@/lib/auth/password";
 import { db } from "@/lib/db";
 
 const INVALID_CREDENTIALS = { error: "That email or password doesn't match an account." };
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     return NextResponse.json(INVALID_CREDENTIALS, { status: 401 });
   }
 
-  const matches = await bcrypt.compare(password, student.passwordHash);
+  const matches = await verifyPassword(password, student.passwordHash);
   if (!matches) {
     return NextResponse.json(INVALID_CREDENTIALS, { status: 401 });
   }

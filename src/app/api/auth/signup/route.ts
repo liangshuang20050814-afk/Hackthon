@@ -5,10 +5,8 @@
 // /api/students/[studentId] — placeholders here just satisfy the schema's
 // NOT NULL columns in between.
 import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
+import { hashPassword } from "@/lib/auth/password";
 import { db } from "@/lib/db";
-
-const SALT_ROUNDS = 10;
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -27,7 +25,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "An account with that email already exists." }, { status: 409 });
   }
 
-  const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+  const passwordHash = await hashPassword(password);
 
   const student = await db.student.create({
     data: {
