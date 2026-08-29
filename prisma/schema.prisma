@@ -21,6 +21,13 @@ model Student {
   bio         String?
   faculty     String // e.g. "Engineering", "Arts & Social Sciences"
   yearOfStudy Int
+  // [Owner: D] Real credentials for src/app/login — nullable because seed
+  // students have neither and were never meant to be logged into. Never
+  // return passwordHash from an API response (see api/auth/* and the
+  // destructuring in api/students/route.ts) — it's a bcrypt hash, not
+  // plaintext, but still shouldn't leave the server.
+  email        String?  @unique
+  passwordHash String?
   // [Owner: D] Optional onboarding fields — all skippable, collected in
   // src/app/onboarding/page.tsx step 2 ("More about you"). Not part of the
   // matching contract (see MatchReason in lib/types.ts); purely profile

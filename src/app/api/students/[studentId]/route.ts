@@ -1,7 +1,9 @@
 // [Owner: D] GET /api/students/:id -> single student, used by TopNav for
 // the avatar+name button (lightweight, no courses/enrollments needed there).
-// PATCH /api/students/:id -> updates a profile from src/app/profile/edit.
-// No auth/session exists yet — same caveat as POST /api/students.
+// PATCH /api/students/:id -> updates a profile from src/app/profile/edit,
+// and completes the account onboarding creates at POST /api/auth/signup.
+// Both handlers strip passwordHash before responding — see the schema
+// comment on Student.passwordHash for why.
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
@@ -11,7 +13,8 @@ export async function GET(_request: Request, { params }: { params: { studentId: 
     include: { interests: true, enrollments: { include: { course: true } } },
   });
   if (!student) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(student);
+  const { passwordHash, ...safe } = student;
+  return NextResponse.json(safe);
 }
 
 export async function PATCH(request: Request, { params }: { params: { studentId: string } }) {
@@ -60,5 +63,6 @@ export async function PATCH(request: Request, { params }: { params: { studentId:
     },
   });
 
-  return NextResponse.json(student);
+  const { passwordHash: _hash, ...safe } = student;
+  return NextResponse.json(safe);
 }
