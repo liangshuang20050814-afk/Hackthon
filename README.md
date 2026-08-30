@@ -39,7 +39,6 @@ http://localhost:3000
 ```
 
 The seed command creates demo data:
-
 - 30 students
 - 10 courses
 - 90 timetable enrollments
